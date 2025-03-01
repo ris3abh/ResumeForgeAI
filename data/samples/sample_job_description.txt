@@ -1,0 +1,48 @@
+About the job
+We are seeking a curious, dynamic and passionate individual to join our team as a Lead Solution Architect & AI / Data Innovator. This role will be responsible for designing, implementing, and delivering RAG (Real-time Adaptive Generation) and AI agent solutions utilizing enterprise data that not only solve business challenges but also drive significant value for our clients. You will be trusted for explaining the value proposition and technical differentiators of our products to customers, understanding their requirements, showing insightful demos, running successful POC’s (proof of concepts) and deployments and helping to drive revenue for the company.
+
+About Us:
+
+We are changing the game on how Enterprise AI-powered applications are built and offered to fortune 5000 global enterprises. We are combining both cutting-edge advancements in machine learning and cloud systems to highly-researched, high-value products for the enterprise. 
+
+Job Summary:
+
+As the Lead Solution Architect & AI Innovator, you will work closely with cross-functional teams to understand client needs and develop tailored AI-driven solutions. You will be responsible for building robust RAG and AI agent platforms using cutting-edge technologies.
+
+
+
+Key Responsibilities:
+
+Work collaboratively with business stakeholders to identify opportunities where advanced AI can add significant value.
+Collaborate closely with product development teams to design scalable solutions that meet the needs of our clients.
+Develop and maintain RAG models that enable real-time adaptive generation of content based on user queries, preferences, and historical data.
+Design and implement AI agents for tasks such as customer service, sales support, and strategic planning.
+Lead Proof of Concept efforts, ensuring timely delivery and adherence to quality standards.
+Continuously improve existing solutions by incorporating new technologies and methodologies.
+Contribute to the development of internal documentation and guidelines on RAG and AI agent best practices.
+
+
+Requirements:
+
+Bachelor’s degree in Computer Science, Engineering, or a related field. Advanced degrees are preferred.
+7+ years of experience as a Solution Architect/Technical Consultant in the IT industry with a focus on Data and AI solutions.
+Exceptional understanding of enterprise applications, data systems, SAAS, Networking and Authentication techniques. 
+Strong understanding of compliance, privacy and security of data
+Proven track record of successfully leading enterprise complex projects from planning through implementation and beyond.
+Demonstrated experience with Enterprise Data Catalog Products or Enterprise Data Observability platforms.
+Strong understanding of RAG models and machine learning principles is essential.
+Experience in designing, developing, and implementing AI agents for business applications.
+Solid experience working with Linux, Python, JSON, YAML is a must. 
+Excellent communication skills; ability to articulate technical ideas clearly to non-technical stakeholders.
+Ability to work well under pressure while meeting tight deadlines and managing multiple projects simultaneously.
+
+
+What We Offer:
+
+A dynamic and fast-paced environment where you can make a meaningful impact.
+Opportunities for professional growth and development through innovative solutions.
+Competitive salary package, comprehensive benefits, stock options, and more.
+An inclusive culture that values diversity and encourages collaboration across teams.
+Application Instructions:
+
+Please submit your resume along with a cover letter detailing how you meet the requirements of this role. Please make sure to mention “Lead Solution Architect & AI Innovator” in the subject line of the email. We appreciate your interest and look forward to reviewing your application.

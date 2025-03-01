@@ -1,0 +1,80 @@
+{
+    "chain": [
+      {
+        "phase": "ResumeAnalysis",
+        "phaseType": "SimplePhase",
+        "max_turn_step": -1,
+        "need_reflect": "True"
+      },
+      {
+        "phase": "JobDescriptionAnalysis",
+        "phaseType": "SimplePhase",
+        "max_turn_step": -1,
+        "need_reflect": "True"
+      },
+      {
+        "phase": "WorkExperienceUpdate",
+        "phaseType": "SimplePhase", 
+        "max_turn_step": 1,
+        "need_reflect": "False"
+      },
+      {
+        "phase": "SkillsUpdate",
+        "phaseType": "SimplePhase",
+        "max_turn_step": 1,
+        "need_reflect": "False"
+      },
+      {
+        "phase": "QualityReview",
+        "phaseType": "ComposedPhase",
+        "cycleNum": 3,
+        "Composition": [
+          {
+            "phase": "QualityReviewComment",
+            "phaseType": "SimplePhase",
+            "max_turn_step": 1,
+            "need_reflect": "False"
+          },
+          {
+            "phase": "QualityRevision",
+            "phaseType": "SimplePhase",
+            "max_turn_step": 1,
+            "need_reflect": "False"
+          }
+        ]
+      },
+      {
+        "phase": "SummaryWriting",
+        "phaseType": "SimplePhase",
+        "max_turn_step": 1,
+        "need_reflect": "False"
+      },
+      {
+        "phase": "ResumeAssembly",
+        "phaseType": "SimplePhase",
+        "max_turn_step": 1,
+        "need_reflect": "True"
+      },
+      {
+        "phase": "FinalReview",
+        "phaseType": "SimplePhase",
+        "max_turn_step": 1,
+        "need_reflect": "False"
+      }
+    ],
+    "recruitments": [
+      "Resume Parser",
+      "Job Description Analyzer",
+      "Experience Customizer",
+      "Skills Optimizer",
+      "Quality Supervisor",
+      "Resume Editor",
+      "LaTeX Specialist",
+      "Career Counselor"
+    ],
+    "clear_structure": "True",
+    "latex_output": "True",
+    "git_management": "False",
+    "with_memory": "True",
+    "background_prompt": "ResumeAI is a professional resume tailoring company powered by multiple intelligent agents working together to customize resumes for specific job descriptions. Each agent has specialized expertise and works collaboratively to produce tailored, high-quality resumes."
+  }
