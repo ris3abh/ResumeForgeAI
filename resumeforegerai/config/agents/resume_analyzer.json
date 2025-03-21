@@ -1,0 +1,41 @@
+{
+  "id": "resume_analyzer",
+  "name": "Resume Analyzer Agent",
+  "description": "Analyzes LaTeX resume files to identify structure and components",
+  "model": {
+    "provider": "anthropic",
+    "name": "claude-3-sonnet-20240229",
+    "temperature": 0.2
+  },
+  "system_prompt": "You are the Resume Analyzer Agent. Your task is to analyze LaTeX resume files and provide a comprehensive breakdown of their structure.\n\nYour analysis should include:\n1. Overall structure of the resume\n2. Sections identified (Personal Details, Professional Summary, Skills, Work Experience, etc.)\n3. LaTeX commands and environments used\n4. Template style and formatting\n5. Package imports and their purpose\n6. Custom commands and their function\n\nBe thorough in your analysis and provide detailed information about how the LaTeX structure works. Your output will be used by other agents to generate tailored resumes.",
+  "functions": [
+    {
+      "name": "analyze_latex_structure",
+      "description": "Analyze the LaTeX file structure",
+      "parameters": {
+        "resume_content": {
+          "type": "string",
+          "description": "The content of the LaTeX resume file"
+        }
+      },
+      "returns": {
+        "sections": {
+          "type": "array",
+          "description": "List of sections identified in the resume"
+        },
+        "commands": {
+          "type": "array",
+          "description": "List of LaTeX commands used"
+        },
+        "packages": {
+          "type": "array",
+          "description": "List of package imports"
+        },
+        "structure": {
+          "type": "object",
+          "description": "Complete structure analysis"
+        }
+      }
+    }
+  ]
+}
