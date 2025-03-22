@@ -1,103 +1,119 @@
-# Resume Automation System
+# Enhanced ResumeForgeAI System
 
-A multi-agent workflow system for analyzing and tailoring resumes based on job descriptions.
+This is an enhanced version of the ResumeForgeAI system with multi-agent collaborative resume customization.
 
-## Overview
+## New Features
 
-This system uses a multi-agent architecture built with LangGraph to automate the process of analyzing resumes and job descriptions, and providing tailored recommendations for resume customization.
+The enhanced system adds the following capabilities:
 
-### Features
+1. **Orchestrator Agent**: Coordinates the entire customization process
+2. **Work Experience Customization Agent**: Tailors work experience bullet points
+3. **Skills Customization Agent**: Optimizes the skills section for the job
+4. **LaTeX Validation Agent**: Ensures proper LaTeX formatting
+5. **Compliance Verification Agent**: Checks if all job requirements are met
+6. **Agent Communication**: Agents can collaborate and provide feedback to each other
+7. **Parallel Processing**: Multiple agents can work simultaneously
+8. **Feedback Loops**: Validation and refinement loops for quality control
 
-- **LaTeX Resume Analysis**: Automatically analyzes the structure and components of LaTeX resumes
-- **Job Description Analysis**: Identifies key requirements and keywords from job descriptions
-- **Tailoring Recommendations**: Provides specific recommendations for customizing resumes
-- **Modular Architecture**: Easily extensible with additional agents and phases
-- **Configuration-driven**: Workflow and agent behaviors are controlled via JSON configuration
+## Architecture
 
-## Directory Structure
+The system uses a multi-agent architecture with inter-agent communication:
 
 ```
-resume_automation/
-│
-├── config/                        # Configuration files
-│   ├── phases.json                # Workflow phase definitions
-│   └── agents/                    # Agent-specific configurations
-│       ├── resume_analyzer.json   # Resume analyzer agent config
-│       ├── job_analyzer.json      # Job description analyzer agent config
-│       └── resume_generator.json  # Resume generator agent config
-│
-├── data/                          # Input data files
-│   ├── sample_resume.tex          # Base resume template
-│   └── sample_job_description.txt # Sample job description
-│
-├── agents/                        # Agent implementations
-│   ├── resume_analyzer.py         # Resume analysis implementation
-│   ├── job_analyzer.py            # Job analysis implementation
-│   └── resume_generator.py        # Resume generation implementation
-│
-├── utils/                         # Utility functions
-│   ├── file_utils.py              # File reading/writing utilities
-│   └── latex_utils.py             # LaTeX handling utilities
-│
-├── workflow/                      # Workflow definitions
-│   ├── graph.py                   # LangGraph setup and workflow
-│   └── state.py                   # State definitions
-│
-├── output/                        # Output directory for results
-│
-├── main.py                        # Main entry point
-└── requirements.txt               # Dependencies
+                                      ┌────────────────────┐
+                                      │                    │
+                                   ┌──┤ Resume Analyzer    │
+                                   │  │                    │
+                                   │  └────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────┐            ┌────────────────────┐
+│                    │            │                    │
+│ Job Description    │────────────┤ Orchestrator       ├────┐
+│ Analyzer           │            │ Agent              │    │
+│                    │            │                    │    │
+└────────────────────┘            └────────────────────┘    │
+                                   │                        │
+                                   │                        │
+               ┌───────────────────┬──────────────────┐     │
+               │                   │                  │     │
+               ▼                   ▼                  ▼     │
+  ┌────────────────────┐  ┌────────────────────┐  ┌─────────┴──────────┐
+  │                    │  │                    │  │                    │
+  │ Work Experience    │  │ Skills             │  │ Compliance         │
+  │ Customization      │  │ Customization      │  │ Verification       │
+  │                    │  │                    │  │                    │
+  └────────────────────┘  └────────────────────┘  └────────────────────┘
+             │                     │                      │
+             │                     │                      │
+             ▼                     ▼                      │
+  ┌────────────────────┐  ┌────────────────────┐          │
+  │                    │  │                    │          │
+  │ LaTeX Validation   │◄─┤ LaTeX Validation   │          │
+  │ (Work Experience)  │  │ (Skills)           │          │
+  │                    │  │                    │          │
+  └────────────────────┘  └────────────────────┘          │
+             │                     │                      │
+             │                     │                      │
+             └─────────┬───────────┘                      │
+                       │                                  │
+                       ▼                                  │
+             ┌────────────────────┐                       │
+             │                    │                       │
+             │ Resume Generation  │◄──────────────────────┘
+             │                    │
+             └────────────────────┘
 ```
 
-## Installation
+## Setup
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/resume-automation.git
-   cd resume-automation
-   ```
-
-2. Install dependencies:
+1. Make sure you have installed all dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Set up your OpenAI API key in the `.env` file:
+2. Set up your OpenAI API key in a `.env` file:
    ```
    OPENAI_API_KEY=your_api_key_here
    ```
 
-## Usage
+## Running the Enhanced System
 
-1. Place your LaTeX resume in the `data` directory or specify its path with `--resume`.
-2. Place your job description in the `data` directory or specify its path with `--job`.
-3. Run the system:
-   ```
-   python main.py --resume data/your_resume.tex --job data/your_job_description.txt --verbose
-   ```
+Run the system using the same command as before:
 
-4. View the results in the `output` directory.
+```bash
+python resumeforegerai/main.py --resume data/sample_resume.tex --job data/sample_job_description.txt --verbose
+```
+
+## Output
+
+The system will generate:
+
+1. `output/resume_analysis.json`: Analysis of the original resume
+2. `output/job_analysis.json`: Analysis of the job description
+3. `output/task_plan.json`: Orchestration plan for customization
+4. `output/compliance_verification.json`: Compliance verification results
+5. `output/tailored_resume.tex`: The final tailored resume
+
+## Agent Communication
+
+The enhanced system features collaborative communication between agents. Each agent:
+
+1. Documents its reasoning and decisions
+2. Provides feedback on other agents' outputs
+3. Refines its work based on feedback
+4. Contributes to the overall goal of tailoring the resume
 
 ## Configuration
 
-### Adding or Modifying Phases
+You can customize agent behaviors by modifying the JSON files in `config/agents/`.
 
-Edit the `config/phases.json` file to modify the workflow phases.
+## Adding New Agents
 
-### Customizing Agent Behavior
+To add a new agent:
 
-Edit the agent configuration files in `config/agents/` to customize:
-- Model parameters (temperature, etc.)
-- System prompts
-- Function definitions
-
-## Future Enhancements
-
-1. Implement the Resume Generator agent to automatically create tailored resumes
-2. Add a web interface for easier interaction
-3. Support for additional resume formats (Word, Markdown, etc.)
-4. Integration with job platforms to automatically fetch job descriptions
-
-## License
-
-MIT
+1. Create a new agent implementation in the `agents/` directory
+2. Add configuration in `config/agents/`
+3. Update `config/phases.json` to include the new agent in the workflow
+4. Update `workflow/graph.py` to handle the new phase
+5. Update `workflow/state.py` to store the new agent's output
