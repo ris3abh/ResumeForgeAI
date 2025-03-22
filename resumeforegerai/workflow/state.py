@@ -19,6 +19,21 @@ class GraphState(TypedDict):
     resume_analysis: Optional[Dict[str, Any]]
     job_analysis: Optional[Dict[str, Any]]
     
+    # Orchestration
+    task_plan: Optional[Dict[str, Any]]
+    agent_assignments: Optional[Dict[str, Any]]
+    
+    # Work Experience Customization
+    work_experience_customization: Optional[Dict[str, Any]]
+    work_experience_validation: Optional[Dict[str, Any]]
+    
+    # Skills Customization
+    skills_customization: Optional[Dict[str, Any]]
+    skills_validation: Optional[Dict[str, Any]]
+    
+    # Compliance
+    compliance_verification: Optional[Dict[str, Any]]
+    
     # Output
     tailored_resume: Optional[str]
     

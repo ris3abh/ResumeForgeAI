@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "phases": [
     {
       "id": "phase_resume_analysis",
@@ -17,17 +17,70 @@
       "agent": "job_analyzer",
       "input": ["job_description_file", "resume_analysis"],
       "output": ["job_analysis"],
-      "next": "end"
+      "next": "phase_orchestration"
+    },
+    {
+      "id": "phase_orchestration",
+      "name": "Customization Orchestration",
+      "description": "Coordinate the customization process and assign tasks to specialized agents",
+      "agent": "orchestrator",
+      "input": ["resume_analysis", "job_analysis", "resume_file"],
+      "output": ["task_plan", "agent_assignments"],
+      "next": "phase_work_experience_customization"
+    },
+    {
+      "id": "phase_work_experience_customization",
+      "name": "Work Experience Customization",
+      "description": "Customize the work experience section to highlight relevant experience",
+      "agent": "work_experience_agent",
+      "input": ["resume_file", "job_analysis", "resume_analysis", "task_plan"],
+      "output": ["work_experience_customization"],
+      "next": "phase_work_experience_validation"
+    },
+    {
+      "id": "phase_work_experience_validation",
+      "name": "Work Experience Validation",
+      "description": "Validate the LaTeX formatting of the customized work experience section",
+      "agent": "latex_validator",
+      "input": ["resume_file", "work_experience_customization"],
+      "output": ["work_experience_validation"],
+      "next": "phase_skills_customization"
+    },
+    {
+      "id": "phase_skills_customization",
+      "name": "Skills Customization",
+      "description": "Customize the technical skills section to match job requirements",
+      "agent": "skills_agent",
+      "input": ["resume_file", "job_analysis", "resume_analysis", "task_plan"],
+      "output": ["skills_customization"],
+      "next": "phase_skills_validation"
+    },
+    {
+      "id": "phase_skills_validation",
+      "name": "Skills Validation",
+      "description": "Validate the LaTeX formatting of the customized skills section",
+      "agent": "latex_validator",
+      "input": ["resume_file", "skills_customization"],
+      "output": ["skills_validation"],
+      "next": "phase_compliance_verification"
+    },
+    {
+      "id": "phase_compliance_verification",
+      "name": "Compliance Verification",
+      "description": "Verify that the customized resume sections meet job requirements",
+      "agent": "compliance_agent",
+      "input": ["job_analysis", "work_experience_customization", "skills_customization"],
+      "output": ["compliance_verification"],
+      "next": "phase_resume_generation"
     },
     {
       "id": "phase_resume_generation",
       "name": "Resume Generation",
-      "description": "Generate a tailored resume based on the analyses",
+      "description": "Generate the final tailored resume by combining all customized sections",
       "agent": "resume_generator",
-      "input": ["resume_analysis", "job_analysis", "resume_file"],
+      "input": ["resume_file", "work_experience_customization", "skills_customization", "compliance_verification"],
       "output": ["tailored_resume"],
-      "next": "end",
-      "enabled": false
+      "next": "end"
     }
   ]
 }
