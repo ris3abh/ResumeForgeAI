@@ -1,0 +1,77 @@
+{
+  "job_description": "About the job\nWe are seeking a curious, dynamic and passionate individual to join our team as a Lead Solution Architect & AI / Data Innovator. This role will be responsible for designing, implementing, and delivering RAG (Real-time Adaptive Generation) and AI agent solutions utilizing enterprise data that not only solve business challenges but also drive significant value for our clients. You will be trusted for explaining the value proposition and technical differentiators of our products to customers, understanding their requirements, showing insightful demos, running successful POC\u2019s (proof of concepts) and deployments and helping to drive revenue for the company.\n\nAbout Us:\n\nWe are changing the game on how Enterprise AI-powered applications are built and offered to fortune 5000 global enterprises. We are combining both cutting-edge advancements in machine learning and cloud systems to highly-researched, high-value products for the enterprise. \n\nJob Summary:\n\nAs the Lead Solution Architect & AI Innovator, you will work closely with cross-functional teams to understand client needs and develop tailored AI-driven solutions. You will be responsible for building robust RAG and AI agent platforms using cutting-edge technologies.\n\n\n\nKey Responsibilities:\n\nWork collaboratively with business stakeholders to identify opportunities where advanced AI can add significant value.\nCollaborate closely with product development teams to design scalable solutions that meet the needs of our clients.\nDevelop and maintain RAG models that enable real-time adaptive generation of content based on user queries, preferences, and historical data.\nDesign and implement AI agents for tasks such as customer service, sales support, and strategic planning.\nLead Proof of Concept efforts, ensuring timely delivery and adherence to quality standards.\nContinuously improve existing solutions by incorporating new technologies and methodologies.\nContribute to the development of internal documentation and guidelines on RAG and AI agent best practices.\n\n\nRequirements:\n\nBachelor\u2019s degree in Computer Science, Engineering, or a related field. Advanced degrees are preferred.\n7+ years of experience as a Solution Architect/Technical Consultant in the IT industry with a focus on Data and AI solutions.\nExceptional understanding of enterprise applications, data systems, SAAS, Networking and Authentication techniques. \nStrong understanding of compliance, privacy and security of data\nProven track record of successfully leading enterprise complex projects from planning through implementation and beyond.\nDemonstrated experience with Enterprise Data Catalog Products or Enterprise Data Observability platforms.\nStrong understanding of RAG models and machine learning principles is essential.\nExperience in designing, developing, and implementing AI agents for business applications.\nSolid experience working with Linux, Python, JSON, YAML is a must. \nExcellent communication skills; ability to articulate technical ideas clearly to non-technical stakeholders.\nAbility to work well under pressure while meeting tight deadlines and managing multiple projects simultaneously.\n\n\nWhat We Offer:\n\nA dynamic and fast-paced environment where you can make a meaningful impact.\nOpportunities for professional growth and development through innovative solutions.\nCompetitive salary package, comprehensive benefits, stock options, and more.\nAn inclusive culture that values diversity and encourages collaboration across teams.\nApplication Instructions:\n\nPlease submit your resume along with a cover letter detailing how you meet the requirements of this role. Please make sure to mention \u201cLead Solution Architect & AI Innovator\u201d in the subject line of the email. We appreciate your interest and look forward to reviewing your application.",
+  "raw_analysis": "To tailor the resume to the job description for the Lead Solution Architect & AI Innovator position, here is a detailed analysis and recommendations for each section of the resume:\n\n### 1. Key Requirements and Qualifications\n- **Educational Background**: Bachelor\u2019s degree in Computer Science, Engineering, or related field; advanced degrees preferred.\n- **Experience**: 7+ years as a Solution Architect/Technical Consultant with a focus on Data and AI solutions.\n- **Technical Expertise**: Strong understanding of enterprise applications, data systems, SAAS, networking, authentication, compliance, privacy, and security of data.\n- **Project Leadership**: Proven track record of leading complex enterprise projects.\n- **Domain Knowledge**: Experience with Enterprise Data Catalog Products or Enterprise Data Observability platforms.\n- **Technical Understanding**: Strong understanding of RAG models and machine learning principles.\n- **Development Skills**: Experience in designing, developing, and implementing AI agents.\n- **Technical Proficiency**: Solid experience with Linux, Python, JSON, YAML.\n\n### 2. Technical Skills and Tools Required\n- **Programming Languages**: Python\n- **Operating Systems**: Linux\n- **Data Formats**: JSON, YAML\n- **Machine Learning**: RAG models, AI agent development\n- **Enterprise Tools**: Enterprise Data Catalog Products, Enterprise Data Observability platforms\n\n### 3. Soft Skills Emphasized\n- **Communication**: Ability to articulate technical ideas clearly to non-technical stakeholders.\n- **Collaboration**: Work collaboratively with business stakeholders and cross-functional teams.\n- **Problem-Solving**: Identify opportunities where advanced AI can add value.\n- **Time Management**: Ability to work under pressure and meet tight deadlines.\n\n### 4. Industry-Specific Terminology and Keywords\n- **RAG (Real-time Adaptive Generation)**\n- **AI Agents**\n- **Enterprise Applications**\n- **Data Systems**\n- **SAAS**\n- **Networking and Authentication**\n- **Compliance, Privacy, and Security**\n- **Proof of Concept (POC)**\n- **Machine Learning Principles**\n\n### 5. Company Values and Culture Indicators\n- **Innovation**: Focus on cutting-edge advancements in machine learning and cloud systems.\n- **Impact**: Opportunities to make a meaningful impact.\n- **Growth**: Professional growth and development through innovative solutions.\n- **Diversity and Collaboration**: Inclusive culture that values diversity and encourages collaboration.\n\n### 6. Specific Modifications to Recommend for Each Resume Section\n\n#### Personal Details\n- **Action**: Ensure contact information is up-to-date and includes links to professional profiles like LinkedIn and GitHub.\n- **Priority**: Low\n\n#### Professional Summary\n- **Action**: Highlight experience in AI and data solutions, leadership in complex projects, and communication skills. Mention specific achievements related to RAG models or AI agents.\n- **Priority**: High\n\n#### Technical Skills\n- **Action**: List Python, Linux, JSON, YAML prominently. Include any experience with Enterprise Data Catalog Products or Data Observability platforms. Highlight machine learning and AI agent development skills.\n- **Priority**: High\n\n#### Experience\n- **Action**: Emphasize roles where you led complex projects, particularly in AI and data solutions. Include specific examples of RAG model development or AI agent implementation. Highlight collaboration with cross-functional teams and successful POCs.\n- **Priority**: High\n\n#### Certifications\n- **Action**: Include any relevant certifications in AI, machine learning, or data systems. If not present, consider pursuing certifications to strengthen qualifications.\n- **Priority**: Medium\n\n#### Education\n- **Action**: Ensure degrees in Computer Science, Engineering, or related fields are clearly listed. If applicable, highlight any advanced degrees.\n- **Priority**: Medium\n\n### 7. Priority Ranking of Changes\n- **High Importance**: Professional Summary, Technical Skills, Experience\n- **Medium Importance**: Certifications, Education\n- **Low Importance**: Personal Details\n\nBy following these recommendations, the resume will be more closely aligned with the job description, increasing the chances of securing an interview for the Lead Solution Architect & AI Innovator position.",
+  "structured_recommendations": {
+    "key_requirements": [
+      "Bachelor\u2019s degree in Computer Science, Engineering, or related field",
+      "7+ years as a Solution Architect/Technical Consultant with a focus on Data and AI solutions",
+      "Strong understanding of enterprise applications, data systems, SAAS, networking, authentication, compliance, privacy, and security of data",
+      "Proven track record of leading complex enterprise projects",
+      "Experience with Enterprise Data Catalog Products or Enterprise Data Observability platforms",
+      "Strong understanding of RAG models and machine learning principles",
+      "Experience in designing, developing, and implementing AI agents",
+      "Solid experience with Linux, Python, JSON, YAML"
+    ],
+    "technical_skills": [
+      "Python",
+      "Linux",
+      "JSON",
+      "YAML",
+      "RAG models",
+      "AI agent development",
+      "Enterprise Data Catalog Products",
+      "Enterprise Data Observability platforms"
+    ],
+    "soft_skills": [
+      "Ability to articulate technical ideas clearly to non-technical stakeholders",
+      "Work collaboratively with business stakeholders and cross-functional teams",
+      "Identify opportunities where advanced AI can add value",
+      "Ability to work under pressure and meet tight deadlines"
+    ],
+    "keywords": [
+      "RAG (Real-time Adaptive Generation)",
+      "AI Agents",
+      "Enterprise Applications",
+      "Data Systems",
+      "SAAS",
+      "Networking and Authentication",
+      "Compliance, Privacy, and Security",
+      "Proof of Concept (POC)",
+      "Machine Learning Principles"
+    ],
+    "section_recommendations": {
+      "Personal Details": {
+        "Action": "Ensure contact information is up-to-date and includes links to professional profiles like LinkedIn and GitHub.",
+        "Priority": "Low"
+      },
+      "Professional Summary": {
+        "Action": "Highlight experience in AI and data solutions, leadership in complex projects, and communication skills. Mention specific achievements related to RAG models or AI agents.",
+        "Priority": "High"
+      },
+      "Technical Skills": {
+        "Action": "List Python, Linux, JSON, YAML prominently. Include any experience with Enterprise Data Catalog Products or Data Observability platforms. Highlight machine learning and AI agent development skills.",
+        "Priority": "High"
+      },
+      "Experience": {
+        "Action": "Emphasize roles where you led complex projects, particularly in AI and data solutions. Include specific examples of RAG model development or AI agent implementation. Highlight collaboration with cross-functional teams and successful POCs.",
+        "Priority": "High"
+      },
+      "Certifications": {
+        "Action": "Include any relevant certifications in AI, machine learning, or data systems. If not present, consider pursuing certifications to strengthen qualifications.",
+        "Priority": "Medium"
+      },
+      "Education": {
+        "Action": "Ensure degrees in Computer Science, Engineering, or related fields are clearly listed. If applicable, highlight any advanced degrees.",
+        "Priority": "Medium"
+      }
+    },
+    "prioritized_changes": [
+      "Professional Summary",
+      "Technical Skills",
+      "Experience",
+      "Certifications",
+      "Education",
+      "Personal Details"
+    ]
+  }
+}

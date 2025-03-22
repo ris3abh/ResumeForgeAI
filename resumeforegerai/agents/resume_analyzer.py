@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Optional
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 
 from utils.file_utils import read_text_file, load_agent_config
 from utils.latex_utils import analyze_latex_structure
@@ -15,7 +15,7 @@ class ResumeAnalyzerAgent:
         
         # Initialize the model
         model_config = self.config["model"]
-        self.model = ChatAnthropic(
+        self.model = ChatOpenAI(
             model=model_config["name"],
             temperature=model_config["temperature"]
         )

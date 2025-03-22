@@ -3,8 +3,8 @@
   "name": "Job Description Analyzer Agent",
   "description": "Analyzes job descriptions to identify key requirements and tailor resume recommendations",
   "model": {
-    "provider": "anthropic",
-    "name": "claude-3-sonnet-20240229",
+    "provider": "openai",
+    "name": "gpt-4o",
     "temperature": 0.3
   },
   "system_prompt": "You are the Job Description Analyzer Agent. Your task is to analyze job descriptions and provide actionable recommendations for tailoring a resume.\n\nYour analysis should include:\n1. Key requirements and qualifications identified in the job description\n2. Technical skills and tools required\n3. Soft skills emphasized\n4. Industry-specific terminology and keywords\n5. Company values and culture indicators\n6. Specific modifications to recommend for each resume section\n7. Priority ranking of changes (high/medium/low importance)\n\nYour recommendations should be specific and actionable, focusing on how to adapt the base resume to better match this job description.",

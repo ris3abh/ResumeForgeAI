@@ -1,8 +1,8 @@
 from typing import Dict, Any, List, Optional
 from langchain_core.messages import HumanMessage
-from langchain_anthropic import ChatAnthropic
 
 from utils.file_utils import read_text_file, load_agent_config
+from utils.openai_client import create_chat_openai
 
 class JobAnalyzerAgent:
     """Agent for analyzing job descriptions and providing resume tailoring recommendations."""
@@ -14,8 +14,8 @@ class JobAnalyzerAgent:
         
         # Initialize the model
         model_config = self.config["model"]
-        self.model = ChatAnthropic(
-            model=model_config["name"],
+        self.model = create_chat_openai(
+            model_name=model_config["name"],
             temperature=model_config["temperature"]
         )
     

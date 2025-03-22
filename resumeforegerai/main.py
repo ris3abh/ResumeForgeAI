@@ -9,6 +9,10 @@ import sys
 import json
 import argparse
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+# Disable __pycache__ directories
+sys.dont_write_bytecode = True
 
 from workflow.graph import ResumeAutomationWorkflow
 from utils.file_utils import read_text_file, write_text_file, read_json_file
@@ -152,6 +156,9 @@ def print_workflow_result(result: Dict[str, Any], verbose: bool = False):
 
 def main():
     """Main entry point."""
+    # Load environment variables from .env file
+    load_dotenv(override=True)
+    
     # Parse arguments
     args = parse_arguments()
     
@@ -161,22 +168,48 @@ def main():
     # Check required files
     check_required_files(args.resume, args.job)
     
+    # Check for OpenAI API key
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    if not openai_api_key:
+        print("\nError: OPENAI_API_KEY environment variable not set.")
+        print("Please set your OpenAI API key in the .env file.")
+        sys.exit(1)
+    
+    # Validate API key format
+    if not openai_api_key.startswith(("sk-", "sk-org-")):
+        print("\nWarning: Your OpenAI API key doesn't appear to be in the expected format.")
+        print("Expected format: sk-... or sk-org-...")
+        print(f"Current key (first 5 chars): {openai_api_key[:5]}...")
+        print("Continuing anyway, but this might cause authentication issues.")
+    
     print("\n" + "="*80)
     print("Resume Automation System")
     print("="*80)
     print(f"\nBase Resume: {args.resume}")
     print(f"Job Description: {args.job}")
     print(f"Output Directory: {args.output_dir}")
+    print(f"Model: GPT-4o (OpenAI)")
     
     # Initialize and run the workflow
     print("\nInitializing workflow...")
-    workflow = ResumeAutomationWorkflow()
-    
-    print("Running workflow...")
-    result = workflow.run(args.resume, args.job)
-    
-    # Print results
-    print_workflow_result(result, args.verbose)
+    try:
+        # Test OpenAI connection before proceeding
+        from utils.openai_client import test_openai_connection
+        test_openai_connection()
+        
+        workflow = ResumeAutomationWorkflow()
+        
+        print("Running workflow...")
+        result = workflow.run(args.resume, args.job)
+        
+        # Print results
+        print_workflow_result(result, args.verbose)
+        
+    except Exception as e:
+        print(f"\n❌ Error initializing workflow: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
     
     print("\nWorkflow complete!")
 

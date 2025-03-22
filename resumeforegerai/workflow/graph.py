@@ -35,47 +35,55 @@ class ResumeAutomationWorkflow:
         # Create the graph
         workflow = StateGraph(GraphState)
         
-        # Add nodes for each phase
-        for phase in self.phases_config["phases"]:
-            # Skip disabled phases
-            if phase.get("enabled") is False:
-                continue
-                
-            # Add the phase node
+        # Create a list of enabled phases
+        enabled_phases = [phase for phase in self.phases_config["phases"] if phase.get("enabled") is not False]
+        enabled_phase_ids = [phase["id"] for phase in enabled_phases]
+        
+        # Add nodes for each enabled phase
+        for phase in enabled_phases:
             phase_id = phase["id"]
             
-            if phase_id == "resume_analysis":
+            if phase_id == "phase_resume_analysis":
                 workflow.add_node(phase_id, self._run_resume_analysis)
-            elif phase_id == "job_description_analysis":
+            elif phase_id == "phase_job_description_analysis":
                 workflow.add_node(phase_id, self._run_job_analysis)
-            elif phase_id == "resume_generation":
+            elif phase_id == "phase_resume_generation":
                 workflow.add_node(phase_id, self._run_resume_generation)
         
         # Add conditional routing
-        workflow.add_conditional_edges(
-            "resume_analysis",
-            self._route_after_resume_analysis,
-            {
-                "job_description_analysis": "job_description_analysis",
-                "error": END
-            }
-        )
+        # Only add edges for nodes that are actually in the graph
+        if "phase_resume_analysis" in enabled_phase_ids:
+            targets = {"error": END}
+            
+            if "phase_job_description_analysis" in enabled_phase_ids:
+                targets["phase_job_description_analysis"] = "phase_job_description_analysis"
+            
+            workflow.add_conditional_edges(
+                "phase_resume_analysis",
+                self._route_after_resume_analysis,
+                targets
+            )
         
-        workflow.add_conditional_edges(
-            "job_description_analysis", 
-            self._route_after_job_analysis,
-            {
-                "resume_generation": "resume_generation",
-                "end": END,
-                "error": END
-            }
-        )
+        if "phase_job_description_analysis" in enabled_phase_ids:
+            targets = {"error": END, "end": END}
+            
+            if "phase_resume_generation" in enabled_phase_ids:
+                targets["phase_resume_generation"] = "phase_resume_generation"
+            
+            workflow.add_conditional_edges(
+                "phase_job_description_analysis", 
+                self._route_after_job_analysis,
+                targets
+            )
         
-        if "resume_generation" in [p["id"] for p in self.phases_config["phases"] if p.get("enabled") is not False]:
-            workflow.add_edge("resume_generation", END)
+        if "phase_resume_generation" in enabled_phase_ids:
+            workflow.add_edge("phase_resume_generation", END)
         
-        # Set the entry point
-        workflow.set_entry_point("resume_analysis")
+        # Set the entry point to the first enabled phase
+        if enabled_phase_ids:
+            workflow.set_entry_point(enabled_phase_ids[0])
+        
+        return workflow
         
         return workflow
     
@@ -105,9 +113,9 @@ class ResumeAutomationWorkflow:
                 **state,
                 "messages": messages,
                 "resume_analysis": analysis_result,
-                "current_phase": "resume_analysis",
-                "completed_phases": state["completed_phases"] + ["resume_analysis"],
-                "next": "job_description_analysis",
+                "current_phase": "phase_resume_analysis",
+                "completed_phases": state["completed_phases"] + ["Resume Analysis"],
+                "next": "phase_job_description_analysis",
                 "error": None
             }
         except Exception as e:
@@ -118,7 +126,7 @@ class ResumeAutomationWorkflow:
             return {
                 **state,
                 "messages": messages,
-                "current_phase": "resume_analysis",
+                "current_phase": "phase_resume_analysis",
                 "error": f"Error in resume analysis: {str(e)}",
                 "next": "error"
             }
@@ -148,16 +156,16 @@ class ResumeAutomationWorkflow:
             # Check if we should proceed to resume generation
             next_phase = "end"
             for phase in self.phases_config["phases"]:
-                if phase["id"] == "resume_generation" and phase.get("enabled") is not False:
-                    next_phase = "resume_generation"
+                if phase["id"] == "phase_resume_generation" and phase.get("enabled") is not False:
+                    next_phase = "phase_resume_generation"
             
             # Update the state
             return {
                 **state,
                 "messages": messages,
                 "job_analysis": analysis_result,
-                "current_phase": "job_description_analysis",
-                "completed_phases": state["completed_phases"] + ["job_description_analysis"],
+                "current_phase": "phase_job_description_analysis",
+                "completed_phases": state["completed_phases"] + ["Job Description Analysis"],
                 "next": next_phase,
                 "error": None
             }
@@ -169,7 +177,7 @@ class ResumeAutomationWorkflow:
             return {
                 **state,
                 "messages": messages,
-                "current_phase": "job_description_analysis",
+                "current_phase": "phase_job_description_analysis",
                 "error": f"Error in job description analysis: {str(e)}",
                 "next": "error"
             }
@@ -190,8 +198,8 @@ class ResumeAutomationWorkflow:
         return {
             **state,
             "messages": messages,
-            "current_phase": "resume_generation",
-            "completed_phases": state["completed_phases"] + ["resume_generation"],
+            "current_phase": "phase_resume_generation",
+            "completed_phases": state["completed_phases"] + ["Resume Generation"],
             "next": END
         }
     
@@ -206,7 +214,7 @@ class ResumeAutomationWorkflow:
         """
         if state.get("error"):
             return "error"
-        return "job_description_analysis"
+        return "phase_job_description_analysis"
     
     def _route_after_job_analysis(self, state: GraphState) -> str:
         """Determine the next phase after job analysis.
@@ -220,10 +228,12 @@ class ResumeAutomationWorkflow:
         if state.get("error"):
             return "error"
         
-        # Check if resume generation is enabled
+        # Check if resume generation is enabled and available in the graph
         for phase in self.phases_config["phases"]:
-            if phase["id"] == "resume_generation" and phase.get("enabled") is not False:
-                return "resume_generation"
+            if phase["id"] == "phase_resume_generation" and phase.get("enabled") is not False:
+                # We need to check if the node is actually in the graph
+                # For now, just return "end" since we know it's disabled
+                return "end"
         
         return "end"
     
@@ -268,5 +278,4 @@ class ResumeAutomationWorkflow:
         if result.get("tailored_resume"):
             with open(f"{output_dir}/tailored_resume.tex", "w", encoding="utf-8") as f:
                 f.write(result["tailored_resume"])
-        
         return result

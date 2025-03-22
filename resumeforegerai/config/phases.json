@@ -1,33 +1,33 @@
 {
-    "version": "1.0",
-    "phases": [
-      {
-        "id": "resume_analysis",
-        "name": "Resume Analysis",
-        "description": "Analyze the LaTeX resume to understand its structure and components",
-        "agent": "resume_analyzer",
-        "input": ["resume_file"],
-        "output": ["resume_analysis"],
-        "next": "job_description_analysis"
-      },
-      {
-        "id": "job_description_analysis",
-        "name": "Job Description Analysis",
-        "description": "Analyze the job description and determine how to tailor the resume",
-        "agent": "job_analyzer",
-        "input": ["job_description_file", "resume_analysis"],
-        "output": ["job_analysis"],
-        "next": "end"
-      },
-      {
-        "id": "resume_generation",
-        "name": "Resume Generation",
-        "description": "Generate a tailored resume based on the analyses",
-        "agent": "resume_generator",
-        "input": ["resume_analysis", "job_analysis", "resume_file"],
-        "output": ["tailored_resume"],
-        "next": "end",
-        "enabled": false
-      }
-    ]
-  }
+  "version": "1.0",
+  "phases": [
+    {
+      "id": "phase_resume_analysis",
+      "name": "Resume Analysis",
+      "description": "Analyze the LaTeX resume to understand its structure and components",
+      "agent": "resume_analyzer",
+      "input": ["resume_file"],
+      "output": ["resume_analysis"],
+      "next": "phase_job_description_analysis"
+    },
+    {
+      "id": "phase_job_description_analysis",
+      "name": "Job Description Analysis",
+      "description": "Analyze the job description and determine how to tailor the resume",
+      "agent": "job_analyzer",
+      "input": ["job_description_file", "resume_analysis"],
+      "output": ["job_analysis"],
+      "next": "end"
+    },
+    {
+      "id": "phase_resume_generation",
+      "name": "Resume Generation",
+      "description": "Generate a tailored resume based on the analyses",
+      "agent": "resume_generator",
+      "input": ["resume_analysis", "job_analysis", "resume_file"],
+      "output": ["tailored_resume"],
+      "next": "end",
+      "enabled": false
+    }
+  ]
+}
