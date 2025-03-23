@@ -41,13 +41,11 @@ class ResumeAutomationWorkflow:
         self.app = self.graph.compile()
     
     def _build_graph(self) -> StateGraph:
-        """Build the workflow graph.
-        
-        Returns:
-            The configured graph
-        """
-        # Create the graph
+        # Create the graph with a different config for messages
         workflow = StateGraph(GraphState)
+        
+        # Configure the graph to handle list updates properly
+        workflow.set_list_option("messages", "append")
         
         # Create a list of enabled phases
         enabled_phases = [phase for phase in self.phases_config["phases"] if phase.get("enabled") is not False]
@@ -134,15 +132,14 @@ class ResumeAutomationWorkflow:
             # Run the analysis
             analysis_result = self.resume_analyzer.analyze(resume_file)
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             analysis_summary = f"Resume analysis complete. Identified {len(analysis_result.get('sections', []))} sections."
-            messages.append(AIMessage(content=analysis_summary, name="ResumeAnalyzer"))
+            new_message = AIMessage(content=analysis_summary, name="ResumeAnalyzer")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "resume_analysis": analysis_result,
                 "current_phase": "phase_resume_analysis",
                 "completed_phases": state["completed_phases"] + ["Resume Analysis"],
@@ -150,13 +147,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in resume analysis: {str(e)}", name="ResumeAnalyzer"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in resume analysis: {str(e)}", name="ResumeAnalyzer")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_resume_analysis",
                 "error": f"Error in resume analysis: {str(e)}",
                 "next": "error"
@@ -179,15 +176,14 @@ class ResumeAutomationWorkflow:
             # Run the analysis
             analysis_result = self.job_analyzer.analyze(job_description_file, resume_analysis)
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             analysis_summary = f"Job description analysis complete. Found {len(analysis_result.get('structured_recommendations', {}).get('key_requirements', []))} key requirements."
-            messages.append(AIMessage(content=analysis_summary, name="JobAnalyzer"))
+            new_message = AIMessage(content=analysis_summary, name="JobAnalyzer")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "job_analysis": analysis_result,
                 "current_phase": "phase_job_description_analysis",
                 "completed_phases": state["completed_phases"] + ["Job Description Analysis"],
@@ -195,13 +191,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in job description analysis: {str(e)}", name="JobAnalyzer"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in job description analysis: {str(e)}", name="JobAnalyzer")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_job_description_analysis",
                 "error": f"Error in job description analysis: {str(e)}",
                 "next": "error"
@@ -234,15 +230,14 @@ class ResumeAutomationWorkflow:
             
             agent_assignments = self.orchestrator.assign_tasks(task_plan["plan"], agents)
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             orchestration_summary = f"Orchestration complete. Created task plan with {len(task_plan['plan'].get('sections_to_customize', []))} sections to customize."
-            messages.append(AIMessage(content=orchestration_summary, name="Orchestrator"))
+            new_message = AIMessage(content=orchestration_summary, name="Orchestrator")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "task_plan": task_plan["plan"],
                 "agent_assignments": agent_assignments,
                 "current_phase": "phase_orchestration",
@@ -251,13 +246,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in orchestration: {str(e)}", name="Orchestrator"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in orchestration: {str(e)}", name="Orchestrator")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_orchestration",
                 "error": f"Error in orchestration: {str(e)}",
                 "next": "error"
@@ -289,15 +284,14 @@ class ResumeAutomationWorkflow:
                 resume_analysis
             )
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             customization_summary = "Work experience customization complete."
-            messages.append(AIMessage(content=customization_summary, name="WorkExperienceAgent"))
+            new_message = AIMessage(content=customization_summary, name="WorkExperienceAgent")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "work_experience_customization": customization_result,
                 "current_phase": "phase_work_experience_customization",
                 "completed_phases": state["completed_phases"] + ["Work Experience Customization"],
@@ -305,13 +299,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in work experience customization: {str(e)}", name="WorkExperienceAgent"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in work experience customization: {str(e)}", name="WorkExperienceAgent")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_work_experience_customization",
                 "error": f"Error in work experience customization: {str(e)}",
                 "next": "error"
@@ -358,15 +352,14 @@ class ResumeAutomationWorkflow:
                 work_experience_customization["customized_section"] = refinement_result.get("refined_section", customized_section)
                 work_experience_customization["refinement"] = refinement_result
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             validation_summary = f"Work experience validation complete. {'Valid' if validation_result.get('is_valid', False) else 'Invalid'} LaTeX. {len(validation_result.get('errors', []))} errors, {len(validation_result.get('warnings', []))} warnings."
-            messages.append(AIMessage(content=validation_summary, name="LaTeXValidator"))
+            new_message = AIMessage(content=validation_summary, name="LaTeXValidator")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "work_experience_validation": validation_result,
                 "work_experience_customization": work_experience_customization,  # Updated with refinements if needed
                 "current_phase": "phase_work_experience_validation",
@@ -375,13 +368,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in work experience validation: {str(e)}", name="LaTeXValidator"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in work experience validation: {str(e)}", name="LaTeXValidator")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_work_experience_validation",
                 "error": f"Error in work experience validation: {str(e)}",
                 "next": "error"
@@ -413,15 +406,14 @@ class ResumeAutomationWorkflow:
                 resume_analysis
             )
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             customization_summary = "Skills customization complete."
-            messages.append(AIMessage(content=customization_summary, name="SkillsAgent"))
+            new_message = AIMessage(content=customization_summary, name="SkillsAgent")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "skills_customization": customization_result,
                 "current_phase": "phase_skills_customization",
                 "completed_phases": state["completed_phases"] + ["Skills Customization"],
@@ -429,13 +421,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in skills customization: {str(e)}", name="SkillsAgent"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in skills customization: {str(e)}", name="SkillsAgent")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_skills_customization",
                 "error": f"Error in skills customization: {str(e)}",
                 "next": "error"
@@ -482,15 +474,14 @@ class ResumeAutomationWorkflow:
                 skills_customization["customized_section"] = refinement_result.get("refined_section", customized_section)
                 skills_customization["refinement"] = refinement_result
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             validation_summary = f"Skills validation complete. {'Valid' if validation_result.get('is_valid', False) else 'Invalid'} LaTeX. {len(validation_result.get('errors', []))} errors, {len(validation_result.get('warnings', []))} warnings."
-            messages.append(AIMessage(content=validation_summary, name="LaTeXValidator"))
+            new_message = AIMessage(content=validation_summary, name="LaTeXValidator")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "skills_validation": validation_result,
                 "skills_customization": skills_customization,  # Updated with refinements if needed
                 "current_phase": "phase_skills_validation",
@@ -499,13 +490,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in skills validation: {str(e)}", name="LaTeXValidator"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in skills validation: {str(e)}", name="LaTeXValidator")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_skills_validation",
                 "error": f"Error in skills validation: {str(e)}",
                 "next": "error"
@@ -546,15 +537,14 @@ class ResumeAutomationWorkflow:
                 )
                 verification_result["improvements"] = improvement_result
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             verification_summary = f"Compliance verification complete. Compliance score: {verification_result.get('compliance_score', 0)}/100. {len(verification_result.get('missing_requirements', []))} missing requirements, {len(verification_result.get('missing_keywords', []))} missing keywords."
-            messages.append(AIMessage(content=verification_summary, name="ComplianceAgent"))
+            new_message = AIMessage(content=verification_summary, name="ComplianceAgent")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "compliance_verification": verification_result,
                 "current_phase": "phase_compliance_verification",
                 "completed_phases": state["completed_phases"] + ["Compliance Verification"],
@@ -562,13 +552,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in compliance verification: {str(e)}", name="ComplianceAgent"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in compliance verification: {str(e)}", name="ComplianceAgent")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_compliance_verification",
                 "error": f"Error in compliance verification: {str(e)}",
                 "next": "error"
@@ -607,15 +597,14 @@ class ResumeAutomationWorkflow:
             output_file = "output/tailored_resume.tex"
             self.resume_generator.save_resume(generation_result["final_resume"], output_file)
             
-            # Update messages
-            messages = list(state["messages"])
+            # Create new message
             generation_summary = f"Resume generation complete. Tailored resume saved to {output_file}."
-            messages.append(AIMessage(content=generation_summary, name="ResumeGenerator"))
+            new_message = AIMessage(content=generation_summary, name="ResumeGenerator")
             
-            # Update the state
+            # Create a new state with updated values
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [new_message],  # Properly extend the messages list
                 "tailored_resume": generation_result["final_resume"],
                 "resume_generation": generation_result,
                 "current_phase": "phase_resume_generation",
@@ -624,13 +613,13 @@ class ResumeAutomationWorkflow:
                 "error": None
             }
         except Exception as e:
-            # Handle errors
-            messages = list(state["messages"])
-            messages.append(AIMessage(content=f"Error in resume generation: {str(e)}", name="ResumeGenerator"))
+            # Create error message
+            error_message = AIMessage(content=f"Error in resume generation: {str(e)}", name="ResumeGenerator")
             
+            # Return state with error
             return {
                 **state,
-                "messages": messages,
+                "messages": state["messages"] + [error_message],  # Properly extend the messages list
                 "current_phase": "phase_resume_generation",
                 "error": f"Error in resume generation: {str(e)}",
                 "next": "error"
@@ -648,7 +637,7 @@ class ResumeAutomationWorkflow:
         """
         # Initialize the state
         initial_state = {
-            "messages": [],
+            "messages": [],  # Start with an empty list of messages
             "current_phase": "",
             "completed_phases": [],
             "resume_file": resume_file,
@@ -690,5 +679,4 @@ class ResumeAutomationWorkflow:
         if result.get("tailored_resume"):
             with open(f"{output_dir}/tailored_resume.tex", "w", encoding="utf-8") as f:
                 f.write(result["tailored_resume"])
-        
         return result

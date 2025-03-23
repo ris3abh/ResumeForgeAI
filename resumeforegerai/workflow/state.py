@@ -5,7 +5,7 @@ class GraphState(TypedDict):
     """State definition for the resume automation workflow."""
     
     # Messages exchanged between agents
-    messages: Annotated[Sequence[BaseMessage], "The messages in the conversation so far"]
+    messages: List[BaseMessage]  # Changed from Annotated[Sequence[BaseMessage], "..."]
     
     # Phase tracking
     current_phase: str
