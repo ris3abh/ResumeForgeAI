@@ -8,6 +8,9 @@ import os
 import sys
 import json
 import argparse
+import logging
+import hashlib
+import concurrent.futures
 from typing import Dict, Any
 from dotenv import load_dotenv
 
@@ -17,6 +20,16 @@ sys.dont_write_bytecode = True
 from workflow.graph import ResumeAutomationWorkflow
 from utils.file_utils import read_text_file, write_text_file, read_json_file
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('output/workflow.log', mode='w')
+    ]
+)
+logger = logging.getLogger("ResumeForgeAI")
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -51,6 +64,25 @@ def parse_arguments():
         help="Enable verbose output"
     )
     
+    parser.add_argument(
+        "--compliance-threshold", 
+        type=int,
+        default=90,
+        help="Compliance score threshold to exit with success (0-100)"
+    )
+    
+    parser.add_argument(
+        "--disable-cache", 
+        action="store_true",
+        help="Disable caching of resume analysis"
+    )
+    
+    parser.add_argument(
+        "--disable-parallel", 
+        action="store_true",
+        help="Disable parallel processing"
+    )
+    
     return parser.parse_args()
 
 
@@ -59,7 +91,8 @@ def ensure_directories():
     directories = [
         "data",
         "output",
-        "config/agents"
+        "config/agents",
+        "cache"
     ]
     
     for directory in directories:
@@ -88,11 +121,47 @@ def check_required_files(resume_file: str, job_description_file: str):
             missing_files.append(config_file)
     
     if missing_files:
-        print("Error: The following required files are missing:")
+        logger.error("The following required files are missing:")
         for file in missing_files:
-            print(f"  - {file}")
-        print("\nPlease create these files before running the application.")
+            logger.error(f"  - {file}")
+        logger.error("Please create these files before running the application.")
         sys.exit(1)
+
+
+def get_resume_hash(resume_file: str) -> str:
+    """Generate a hash of the resume file for caching."""
+    with open(resume_file, 'rb') as file:
+        file_content = file.read()
+        return hashlib.md5(file_content).hexdigest()
+
+
+def load_cached_resume_analysis(resume_hash: str) -> Dict[str, Any]:
+    """Load cached resume analysis if available."""
+    cache_file = f"cache/resume_{resume_hash}.json"
+    if os.path.exists(cache_file):
+        logger.info(f"Loading cached resume analysis")
+        with open(cache_file, 'r') as file:
+            return json.load(file)
+    return None
+
+
+def save_resume_analysis_cache(resume_hash: str, analysis: Dict[str, Any]):
+    """Save resume analysis to cache."""
+    cache_file = f"cache/resume_{resume_hash}.json"
+    with open(cache_file, 'w') as file:
+        json.dump(analysis, file)
+    logger.info(f"Saved resume analysis to cache: {cache_file}")
+
+
+def print_agent_message(agent_name: str, message: str, is_response: bool = False):
+    """Print a formatted agent message."""
+    if is_response:
+        print(f"\n\033[1;36m[{agent_name} RESPONSE]\033[0m")
+    else:
+        print(f"\n\033[1;34m[{agent_name} REQUEST]\033[0m")
+    
+    print(f"{message}")
+    print("\033[1;30m" + "-" * 80 + "\033[0m")
 
 
 def print_workflow_result(result: Dict[str, Any], verbose: bool = False):
@@ -139,11 +208,29 @@ def print_workflow_result(result: Dict[str, Any], verbose: bool = False):
             if len(keywords) > 10:
                 print(f"     ... and {len(keywords) - 10} more")
     
+    # Print compliance information
+    if result.get("compliance_verification"):
+        compliance = result["compliance_verification"]
+        print(f"\n✅ Compliance Verification:")
+        print(f"   - Overall compliance score: {compliance.get('compliance_score', 0)}/100")
+        print(f"   - Requirement compliance: {compliance.get('requirement_compliance_percentage', 0):.1f}%")
+        print(f"   - Keyword compliance: {compliance.get('keyword_compliance_percentage', 0):.1f}%")
+        
+        if verbose:
+            missing_reqs = compliance.get("missing_requirements", [])
+            if missing_reqs:
+                print("\n   Missing Requirements:")
+                for req in missing_reqs[:3]:
+                    print(f"     - {req}")
+                if len(missing_reqs) > 3:
+                    print(f"     ... and {len(missing_reqs) - 3} more")
+    
     # Print output file locations
     print("\n📂 Output Files:")
     output_files = [
         ("Resume Analysis", "output/resume_analysis.json"),
-        ("Job Analysis", "output/job_analysis.json")
+        ("Job Analysis", "output/job_analysis.json"),
+        ("Workflow Log", "output/workflow.log")
     ]
     
     if result.get("tailored_resume"):
@@ -162,6 +249,10 @@ def main():
     # Parse arguments
     args = parse_arguments()
     
+    # Set logging level based on verbose flag
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    
     # Ensure directories exist
     ensure_directories()
     
@@ -171,16 +262,16 @@ def main():
     # Check for OpenAI API key
     openai_api_key = os.environ.get("OPENAI_API_KEY")
     if not openai_api_key:
-        print("\nError: OPENAI_API_KEY environment variable not set.")
-        print("Please set your OpenAI API key in the .env file.")
+        logger.error("OPENAI_API_KEY environment variable not set.")
+        logger.error("Please set your OpenAI API key in the .env file.")
         sys.exit(1)
     
     # Validate API key format
     if not openai_api_key.startswith(("sk-", "sk-org-")):
-        print("\nWarning: Your OpenAI API key doesn't appear to be in the expected format.")
-        print("Expected format: sk-... or sk-org-...")
-        print(f"Current key (first 5 chars): {openai_api_key[:5]}...")
-        print("Continuing anyway, but this might cause authentication issues.")
+        logger.warning("Your OpenAI API key doesn't appear to be in the expected format.")
+        logger.warning("Expected format: sk-... or sk-org-...")
+        logger.warning(f"Current key (first 5 chars): {openai_api_key[:5]}...")
+        logger.warning("Continuing anyway, but this might cause authentication issues.")
     
     print("\n" + "="*80)
     print("Resume Automation System")
@@ -189,6 +280,9 @@ def main():
     print(f"Job Description: {args.job}")
     print(f"Output Directory: {args.output_dir}")
     print(f"Model: GPT-4o (OpenAI)")
+    print(f"Compliance Threshold: {args.compliance_threshold}/100")
+    print(f"Parallel Processing: {'Disabled' if args.disable_parallel else 'Enabled'}")
+    print(f"Caching: {'Disabled' if args.disable_cache else 'Enabled'}")
     
     # Initialize and run the workflow
     print("\nInitializing workflow...")
@@ -197,27 +291,38 @@ def main():
         from utils.openai_client import test_openai_connection
         test_openai_connection()
         
-        workflow = ResumeAutomationWorkflow()
+        # Create the workflow
+        workflow = ResumeAutomationWorkflow(
+            show_agent_messages=True,
+            early_exit_compliance_score=args.compliance_threshold,
+            enable_parallel=not args.disable_parallel,
+            verbose=args.verbose
+        )
+        
+        # Check if we have a cached resume analysis
+        resume_analysis = None
+        if not args.disable_cache:
+            resume_hash = get_resume_hash(args.resume)
+            resume_analysis = load_cached_resume_analysis(resume_hash)
         
         print("Running workflow...")
-        result = workflow.run(args.resume, args.job)
+        result = workflow.run(args.resume, args.job, cached_resume_analysis=resume_analysis)
+        
+        # Cache the resume analysis if not already cached
+        if not args.disable_cache and resume_analysis is None and result.get("resume_analysis"):
+            resume_hash = get_resume_hash(args.resume)
+            save_resume_analysis_cache(resume_hash, result["resume_analysis"])
         
         # Print results
         print_workflow_result(result, args.verbose)
         
     except Exception as e:
-        print(f"\n❌ Error initializing workflow: {str(e)}")
+        logger.error(f"Error initializing workflow: {str(e)}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
     
     print("\nWorkflow complete!")
-    # ISSUE: Doesn't honor the --output-dir parameter, hardcodes "output"
-    # ISSUE: No error handling for file access permissions
-    # ISSUE: No validation of LaTeX compilation after generation
-    # ISSUE: No early exit or recovery if OpenAI API is unreachable
-    # ISSUE: No timeout on workflow execution
-    # ISSUE: No progress reporting for long-running workflow steps
 
 
 if __name__ == "__main__":

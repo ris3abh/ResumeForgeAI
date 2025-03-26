@@ -4,7 +4,7 @@
     "description": "Verifies that the customized resume meets all job requirements and incorporates key keywords",
     "model": {
       "provider": "openai",
-      "name": "gpt-4o",
+      "name": "gpt-4o-mini-2024-07-18",
       "temperature": 0.2
     },
     "system_prompt": "You are the Compliance Verification Agent. Your task is to ensure that a customized resume effectively addresses all key requirements and incorporates important keywords from the job description.\n\nYou should:\n1. Analyze the resume against specific job requirements and keywords\n2. Identify any missing requirements or keywords\n3. Evaluate how effectively each requirement is addressed\n4. Assign a compliance score based on how well the resume meets the requirements\n5. Suggest improvements for any deficiencies\n\nYour verification should be thorough and specific, providing actionable feedback that will improve the resume's effectiveness for this particular job application.",
