@@ -22,6 +22,11 @@ def extract_latex_sections(latex_content: str) -> Dict[str, str]:
         section_content = match.group(2).strip()
         sections[section_name] = section_content
     
+    # ISSUE: Defined subsection_pattern but never used it for extraction
+    # ISSUE: No fallback or error handling if regex doesn't match
+    # ISSUE: No handling for nested LaTeX braces inside section names
+    # ISSUE: No handling for custom section commands (like \resumesection)
+    
     return sections
 
 def extract_latex_commands(latex_content: str) -> List[str]:
@@ -72,6 +77,7 @@ def extract_latex_packages(latex_content: str) -> List[Dict[str, str]]:
     
     return packages
 
+
 def modify_latex_section(latex_content: str, section_name: str, new_content: str) -> str:
     """Modify a specific section in a LaTeX document.
     
@@ -87,7 +93,14 @@ def modify_latex_section(latex_content: str, section_name: str, new_content: str
     pattern = rf'(\\section\{{{re.escape(section_name)}\}}).*?((?=\\section\{{|\\end\{{document\}}))'
     
     # Replace the section content
-    return re.sub(pattern, f'\\1\n{new_content}\n', latex_content, flags=re.DOTALL)
+    replaced_content = re.sub(pattern, f'\\1\n{new_content}\n', latex_content, flags=re.DOTALL)
+    
+    # ISSUE: No validation if the replacement actually occurred
+    # ISSUE: No error handling if the section wasn't found
+    # ISSUE: If pattern doesn't match, it silently returns the original content
+    # ISSUE: No escape handling for new_content if it contains regex special characters
+    
+    return replaced_content
 
 def combine_latex_sections(original_latex: str, customized_sections: Dict[str, str]) -> str:
     """Combine the original LaTeX document with customized sections.
@@ -167,5 +180,8 @@ def analyze_latex_structure(latex_content: str) -> Dict[str, Any]:
             "name": env_name,
             "content": env_content if len(env_content) < 100 else env_content[:100] + "..."
         })
+    
+    # ISSUE: Environment matching is naive and can fail with nested environments
+    # ISSUE: No handling for malformed LaTeX (e.g. missing \end{} command)
     
     return result

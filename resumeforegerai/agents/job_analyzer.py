@@ -65,31 +65,31 @@ class JobAnalyzerAgent:
             sections_info += f"- {section.get('name', 'Unnamed Section')}\n"
         
         return f"""
-{self.config['system_prompt']}
+            {self.config['system_prompt']}
 
-Please analyze the following job description and provide specific recommendations for tailoring a resume:
+            Please analyze the following job description and provide specific recommendations for tailoring a resume:
 
-JOB DESCRIPTION:
-----------------
-{job_description}
+            JOB DESCRIPTION:
+            ----------------
+            {job_description}
 
-RESUME INFORMATION:
-------------------
-{sections_info}
+            RESUME INFORMATION:
+            ------------------
+            {sections_info}
 
-{resume_analysis.get('llm_analysis', 'No detailed analysis available')}
+            {resume_analysis.get('llm_analysis', 'No detailed analysis available')}
 
-Based on this information, please provide:
-1. Key requirements and qualifications from the job description
-2. Technical skills and tools required
-3. Soft skills emphasized
-4. Industry-specific terminology and keywords
-5. Company values and culture indicators
-6. Specific modifications to recommend for each resume section
-7. Priority ranking of changes (high/medium/low importance)
+            Based on this information, please provide:
+            1. Key requirements and qualifications from the job description
+            2. Technical skills and tools required
+            3. Soft skills emphasized
+            4. Industry-specific terminology and keywords
+            5. Company values and culture indicators
+            6. Specific modifications to recommend for each resume section
+            7. Priority ranking of changes (high/medium/low importance)
 
-Format your response as a detailed analysis with concrete, actionable recommendations for tailoring the resume to this specific job description.
-"""
+            Format your response as a detailed analysis with concrete, actionable recommendations for tailoring the resume to this specific job description.
+            """
     
     def _structure_recommendations(self, llm_response: str, resume_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Extract and structure the recommendations from the LLM response.
@@ -103,16 +103,16 @@ Format your response as a detailed analysis with concrete, actionable recommenda
         """
         # Create a prompt to extract structured data
         extraction_prompt = f"""
-Based on your job description analysis, please extract the following structured information in JSON format:
-1. key_requirements: List of key requirements from the job description
-2. technical_skills: List of technical skills required
-3. soft_skills: List of soft skills emphasized
-4. keywords: Important keywords to include in the resume
-5. section_recommendations: Object with recommendations for each resume section
-6. prioritized_changes: List of recommended changes in priority order
+            Based on your job description analysis, please extract the following structured information in JSON format:
+            1. key_requirements: List of key requirements from the job description
+            2. technical_skills: List of technical skills required
+            3. soft_skills: List of soft skills emphasized
+            4. keywords: Important keywords to include in the resume
+            5. section_recommendations: Object with recommendations for each resume section
+            6. prioritized_changes: List of recommended changes in priority order
 
-Please format your response ONLY as valid JSON with these fields.
-"""
+            Please format your response ONLY as valid JSON with these fields.
+            """
         
         # Get structured data from the LLM
         try:
@@ -137,6 +137,11 @@ Please format your response ONLY as valid JSON with these fields.
         except Exception as e:
             # If extraction fails, continue with a basic structure
             pass
+        
+        # ISSUE: No logging of the exception when JSON parsing fails
+        # ISSUE: No way to debug what went wrong with the JSON extraction
+        # ISSUE: Uses bare except blocks which hide errors
+        # ISSUE: No attempt to recover partial data from malformed JSON
         
         # Fallback: return basic structure with raw analysis
         return {

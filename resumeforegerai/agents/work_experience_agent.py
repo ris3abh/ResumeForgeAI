@@ -6,11 +6,7 @@ from utils.openai_client import create_chat_openai
 from utils.latex_utils import extract_latex_sections
 
 class WorkExperienceAgent:
-    """Agent for customizing the work experience section of a resume.
-    
-    This agent tailors work experience bullet points to highlight relevant 
-    experience based on the job description and requirements.
-    """
+    """Agent for customizing the work experience section of a resume."""
     
     def __init__(self):
         """Initialize the work experience customization agent."""
@@ -205,10 +201,13 @@ class WorkExperienceAgent:
         latex_match = re.search(r'```latex\s*([\s\S]*?)\s*```', llm_response)
         customized_section = latex_match.group(1) if latex_match else None
         
+        # ISSUE: No null check before accessing group(1), potential AttributeError
+        
         # If no LaTeX block, try to extract without the language specifier
         if not customized_section:
             latex_match = re.search(r'```\s*([\s\S]*?)\s*```', llm_response)
             customized_section = latex_match.group(1) if latex_match else None
+            # ISSUE: Same null check issue as above
         
         # If still no LaTeX block, use a simple heuristic to extract the section
         if not customized_section:
@@ -225,13 +224,16 @@ class WorkExperienceAgent:
             
             if start_idx is not None and end_idx is not None:
                 customized_section = '\n'.join(lines[start_idx:end_idx+1])
+            # ISSUE: No else case - if neither regex nor heuristic works, customized_section remains None
         
         # Extract reasoning (everything after the LaTeX block that's not another code block)
         if latex_match:
             post_latex = llm_response[latex_match.end():]
             reasoning_match = re.search(r'(?:reasoning|rationale|changes)(?::|^)([\s\S]*?)(?:```|$)', post_latex, re.IGNORECASE)
             reasoning = reasoning_match.group(1).strip() if reasoning_match else post_latex.strip()
+            # ISSUE: Potential AttributeError if reasoning_match is None
         else:
             reasoning = "No explicit reasoning provided."
         
+        # ISSUE: If customized_section is None, returns a tuple with None which may cause issues downstream
         return customized_section, reasoning

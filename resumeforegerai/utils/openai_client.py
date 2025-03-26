@@ -34,6 +34,10 @@ def create_chat_openai(model_name="gpt-4o", temperature=0.2):
         temperature=temperature,
         api_key=api_key
     )
+    # ISSUE: No timeout handling for API calls
+    # ISSUE: No retry logic for transient errors
+    # ISSUE: No handling for rate limiting
+    # ISSUE: No API base URL configuration for proxies or alternative endpoints
 
 def create_openai_client():
     """Create a direct OpenAI client instance.
@@ -44,6 +48,7 @@ def create_openai_client():
     api_key = get_openai_api_key()
     
     return OpenAI(api_key=api_key)
+    # ISSUE: Same issues as above
 
 def test_openai_connection():
     """Test the OpenAI connection by making a simple API call.
@@ -60,3 +65,5 @@ def test_openai_connection():
         return True
     except Exception as e:
         raise ConnectionError(f"Failed to connect to OpenAI API: {str(e)}")
+    # ISSUE: Bare except block that hides the specific error type
+    # ISSUE: No timeout on API call that could hang

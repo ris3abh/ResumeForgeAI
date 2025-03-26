@@ -212,6 +212,12 @@ def main():
         sys.exit(1)
     
     print("\nWorkflow complete!")
+    # ISSUE: Doesn't honor the --output-dir parameter, hardcodes "output"
+    # ISSUE: No error handling for file access permissions
+    # ISSUE: No validation of LaTeX compilation after generation
+    # ISSUE: No early exit or recovery if OpenAI API is unreachable
+    # ISSUE: No timeout on workflow execution
+    # ISSUE: No progress reporting for long-running workflow steps
 
 
 if __name__ == "__main__":

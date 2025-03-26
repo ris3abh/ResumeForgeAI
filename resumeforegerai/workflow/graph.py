@@ -1,5 +1,6 @@
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Literal
 import json
+import os
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage, AIMessage
@@ -41,11 +42,8 @@ class ResumeAutomationWorkflow:
         self.app = self.graph.compile()
     
     def _build_graph(self) -> StateGraph:
-        # Create the graph with a different config for messages
+        # Create the state graph
         workflow = StateGraph(GraphState)
-        
-        # Configure the graph to handle list updates properly
-        workflow.set_list_option("messages", "append")
         
         # Create a list of enabled phases
         enabled_phases = [phase for phase in self.phases_config["phases"] if phase.get("enabled") is not False]
@@ -87,10 +85,19 @@ class ResumeAutomationWorkflow:
         
         # Add error handling edges
         for phase_id in enabled_phase_ids:
-            # Add conditional edge for error handling
+            # For each phase, create a specific error handler
+            def create_error_handler(phase):
+                def error_handler(state):
+                    has_error = state.get("error") is not None
+                    if has_error:
+                        return "error"
+                    return "continue"
+                return error_handler
+            
+            # Register the conditional edge
             workflow.add_conditional_edges(
                 phase_id,
-                self._handle_error,
+                create_error_handler(phase_id),
                 {
                     "error": END,
                     "continue": phase_id  # No change, stays on the same node
@@ -103,28 +110,8 @@ class ResumeAutomationWorkflow:
         
         return workflow
     
-    def _handle_error(self, state: GraphState) -> str:
-        """Handle errors in the workflow.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Next state transition
-        """
-        if state.get("error"):
-            return "error"
-        return "continue"
-    
-    def _run_resume_analysis(self, state: GraphState) -> GraphState:
-        """Run resume analysis phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_resume_analysis(self, state: GraphState) -> Dict[str, Any]:
+        """Run resume analysis phase."""
         try:
             # Get the resume file path
             resume_file = state["resume_file"]
@@ -136,13 +123,12 @@ class ResumeAutomationWorkflow:
             analysis_summary = f"Resume analysis complete. Identified {len(analysis_result.get('sections', []))} sections."
             new_message = AIMessage(content=analysis_summary, name="ResumeAnalyzer")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],  # List will be combined with existing messages
                 "resume_analysis": analysis_result,
                 "current_phase": "phase_resume_analysis",
-                "completed_phases": state["completed_phases"] + ["Resume Analysis"],
+                "completed_phases": ["Resume Analysis"],
                 "next": "phase_job_description_analysis",
                 "error": None
             }
@@ -152,22 +138,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_resume_analysis",
                 "error": f"Error in resume analysis: {str(e)}",
                 "next": "error"
             }
     
-    def _run_job_analysis(self, state: GraphState) -> GraphState:
-        """Run job description analysis phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_job_analysis(self, state: GraphState) -> Dict[str, Any]:
+        """Run job description analysis phase."""
         try:
             # Get the job description file path and resume analysis
             job_description_file = state["job_description_file"]
@@ -180,13 +158,12 @@ class ResumeAutomationWorkflow:
             analysis_summary = f"Job description analysis complete. Found {len(analysis_result.get('structured_recommendations', {}).get('key_requirements', []))} key requirements."
             new_message = AIMessage(content=analysis_summary, name="JobAnalyzer")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "job_analysis": analysis_result,
                 "current_phase": "phase_job_description_analysis",
-                "completed_phases": state["completed_phases"] + ["Job Description Analysis"],
+                "completed_phases": ["Job Description Analysis"],
                 "next": "phase_orchestration",
                 "error": None
             }
@@ -196,22 +173,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_job_description_analysis",
                 "error": f"Error in job description analysis: {str(e)}",
                 "next": "error"
             }
     
-    def _run_orchestration(self, state: GraphState) -> GraphState:
-        """Run orchestration phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_orchestration(self, state: GraphState) -> Dict[str, Any]:
+        """Run orchestration phase."""
         try:
             # Get the resume and job analyses
             resume_analysis = state["resume_analysis"]
@@ -234,14 +203,13 @@ class ResumeAutomationWorkflow:
             orchestration_summary = f"Orchestration complete. Created task plan with {len(task_plan['plan'].get('sections_to_customize', []))} sections to customize."
             new_message = AIMessage(content=orchestration_summary, name="Orchestrator")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "task_plan": task_plan["plan"],
                 "agent_assignments": agent_assignments,
                 "current_phase": "phase_orchestration",
-                "completed_phases": state["completed_phases"] + ["Customization Orchestration"],
+                "completed_phases": ["Customization Orchestration"],
                 "next": "phase_work_experience_customization",
                 "error": None
             }
@@ -251,22 +219,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_orchestration",
                 "error": f"Error in orchestration: {str(e)}",
                 "next": "error"
             }
     
-    def _run_work_experience_customization(self, state: GraphState) -> GraphState:
-        """Run work experience customization phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_work_experience_customization(self, state: GraphState) -> Dict[str, Any]:
+        """Run work experience customization phase."""
         try:
             # Get required inputs
             resume_file = state["resume_file"]
@@ -288,13 +248,12 @@ class ResumeAutomationWorkflow:
             customization_summary = "Work experience customization complete."
             new_message = AIMessage(content=customization_summary, name="WorkExperienceAgent")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "work_experience_customization": customization_result,
                 "current_phase": "phase_work_experience_customization",
-                "completed_phases": state["completed_phases"] + ["Work Experience Customization"],
+                "completed_phases": ["Work Experience Customization"],
                 "next": "phase_work_experience_validation",
                 "error": None
             }
@@ -304,22 +263,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_work_experience_customization",
                 "error": f"Error in work experience customization: {str(e)}",
                 "next": "error"
             }
     
-    def _run_work_experience_validation(self, state: GraphState) -> GraphState:
-        """Run work experience validation phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_work_experience_validation(self, state: GraphState) -> Dict[str, Any]:
+        """Run work experience validation phase."""
         try:
             # Get required inputs
             resume_file = state["resume_file"]
@@ -349,21 +300,22 @@ class ResumeAutomationWorkflow:
                 )
                 
                 # Update the customization result
-                work_experience_customization["customized_section"] = refinement_result.get("refined_section", customized_section)
-                work_experience_customization["refinement"] = refinement_result
+                work_experience_customization_updated = dict(work_experience_customization)
+                work_experience_customization_updated["customized_section"] = refinement_result.get("refined_section", customized_section)
+                work_experience_customization_updated["refinement"] = refinement_result
+            else:
+                work_experience_customization_updated = work_experience_customization
             
-            # Create new message
             validation_summary = f"Work experience validation complete. {'Valid' if validation_result.get('is_valid', False) else 'Invalid'} LaTeX. {len(validation_result.get('errors', []))} errors, {len(validation_result.get('warnings', []))} warnings."
             new_message = AIMessage(content=validation_summary, name="LaTeXValidator")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "work_experience_validation": validation_result,
-                "work_experience_customization": work_experience_customization,  # Updated with refinements if needed
+                "work_experience_customization": work_experience_customization_updated,
                 "current_phase": "phase_work_experience_validation",
-                "completed_phases": state["completed_phases"] + ["Work Experience Validation"],
+                "completed_phases": ["Work Experience Validation"],
                 "next": "phase_skills_customization",
                 "error": None
             }
@@ -373,22 +325,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_work_experience_validation",
                 "error": f"Error in work experience validation: {str(e)}",
                 "next": "error"
             }
     
-    def _run_skills_customization(self, state: GraphState) -> GraphState:
-        """Run skills customization phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_skills_customization(self, state: GraphState) -> Dict[str, Any]:
+        """Run skills customization phase."""
         try:
             # Get required inputs
             resume_file = state["resume_file"]
@@ -410,13 +354,12 @@ class ResumeAutomationWorkflow:
             customization_summary = "Skills customization complete."
             new_message = AIMessage(content=customization_summary, name="SkillsAgent")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "skills_customization": customization_result,
                 "current_phase": "phase_skills_customization",
-                "completed_phases": state["completed_phases"] + ["Skills Customization"],
+                "completed_phases": ["Skills Customization"],
                 "next": "phase_skills_validation",
                 "error": None
             }
@@ -426,22 +369,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_skills_customization",
                 "error": f"Error in skills customization: {str(e)}",
                 "next": "error"
             }
     
-    def _run_skills_validation(self, state: GraphState) -> GraphState:
-        """Run skills validation phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_skills_validation(self, state: GraphState) -> Dict[str, Any]:
+        """Run skills validation phase."""
         try:
             # Get required inputs
             resume_file = state["resume_file"]
@@ -471,21 +406,23 @@ class ResumeAutomationWorkflow:
                 )
                 
                 # Update the customization result
-                skills_customization["customized_section"] = refinement_result.get("refined_section", customized_section)
-                skills_customization["refinement"] = refinement_result
+                skills_customization_updated = dict(skills_customization)
+                skills_customization_updated["customized_section"] = refinement_result.get("refined_section", customized_section)
+                skills_customization_updated["refinement"] = refinement_result
+            else:
+                skills_customization_updated = skills_customization
             
             # Create new message
             validation_summary = f"Skills validation complete. {'Valid' if validation_result.get('is_valid', False) else 'Invalid'} LaTeX. {len(validation_result.get('errors', []))} errors, {len(validation_result.get('warnings', []))} warnings."
             new_message = AIMessage(content=validation_summary, name="LaTeXValidator")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "skills_validation": validation_result,
-                "skills_customization": skills_customization,  # Updated with refinements if needed
+                "skills_customization": skills_customization_updated,
                 "current_phase": "phase_skills_validation",
-                "completed_phases": state["completed_phases"] + ["Skills Validation"],
+                "completed_phases": ["Skills Validation"],
                 "next": "phase_compliance_verification",
                 "error": None
             }
@@ -495,22 +432,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_skills_validation",
                 "error": f"Error in skills validation: {str(e)}",
                 "next": "error"
             }
     
-    def _run_compliance_verification(self, state: GraphState) -> GraphState:
-        """Run compliance verification phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_compliance_verification(self, state: GraphState) -> Dict[str, Any]:
+        """Run compliance verification phase."""
         try:
             # Get required inputs
             job_analysis = state["job_analysis"]
@@ -541,13 +470,12 @@ class ResumeAutomationWorkflow:
             verification_summary = f"Compliance verification complete. Compliance score: {verification_result.get('compliance_score', 0)}/100. {len(verification_result.get('missing_requirements', []))} missing requirements, {len(verification_result.get('missing_keywords', []))} missing keywords."
             new_message = AIMessage(content=verification_summary, name="ComplianceAgent")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "compliance_verification": verification_result,
                 "current_phase": "phase_compliance_verification",
-                "completed_phases": state["completed_phases"] + ["Compliance Verification"],
+                "completed_phases": ["Compliance Verification"],
                 "next": "phase_resume_generation",
                 "error": None
             }
@@ -557,22 +485,14 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_compliance_verification",
                 "error": f"Error in compliance verification: {str(e)}",
                 "next": "error"
             }
     
-    def _run_resume_generation(self, state: GraphState) -> GraphState:
-        """Run resume generation phase.
-        
-        Args:
-            state: Current workflow state
-            
-        Returns:
-            Updated state
-        """
+    def _run_resume_generation(self, state: GraphState) -> Dict[str, Any]:
+        """Run resume generation phase."""
         try:
             # Get required inputs
             resume_file = state["resume_file"]
@@ -601,14 +521,13 @@ class ResumeAutomationWorkflow:
             generation_summary = f"Resume generation complete. Tailored resume saved to {output_file}."
             new_message = AIMessage(content=generation_summary, name="ResumeGenerator")
             
-            # Create a new state with updated values
+            # Return only the changes to the state
             return {
-                **state,
-                "messages": state["messages"] + [new_message],  # Properly extend the messages list
+                "messages": [new_message],
                 "tailored_resume": generation_result["final_resume"],
                 "resume_generation": generation_result,
                 "current_phase": "phase_resume_generation",
-                "completed_phases": state["completed_phases"] + ["Resume Generation"],
+                "completed_phases": ["Resume Generation"],
                 "next": "end",
                 "error": None
             }
@@ -618,8 +537,7 @@ class ResumeAutomationWorkflow:
             
             # Return state with error
             return {
-                **state,
-                "messages": state["messages"] + [error_message],  # Properly extend the messages list
+                "messages": [error_message],
                 "current_phase": "phase_resume_generation",
                 "error": f"Error in resume generation: {str(e)}",
                 "next": "error"
@@ -657,26 +575,38 @@ class ResumeAutomationWorkflow:
         }
         
         # Run the workflow
-        result = self.app.invoke(initial_state)
+        try:
+            result = self.app.invoke(initial_state)
         
-        # Save the results
-        output_dir = "output"
-        import os
-        os.makedirs(output_dir, exist_ok=True)
-        
-        if result.get("resume_analysis"):
-            write_json_file(f"{output_dir}/resume_analysis.json", result["resume_analysis"])
-        
-        if result.get("job_analysis"):
-            write_json_file(f"{output_dir}/job_analysis.json", result["job_analysis"])
-        
-        if result.get("task_plan"):
-            write_json_file(f"{output_dir}/task_plan.json", result["task_plan"])
-        
-        if result.get("compliance_verification"):
-            write_json_file(f"{output_dir}/compliance_verification.json", result["compliance_verification"])
-        
-        if result.get("tailored_resume"):
-            with open(f"{output_dir}/tailored_resume.tex", "w", encoding="utf-8") as f:
-                f.write(result["tailored_resume"])
-        return result
+            # Save the results
+            output_dir = "output"
+            os.makedirs(output_dir, exist_ok=True)
+            
+            if result.get("resume_analysis"):
+                write_json_file(f"{output_dir}/resume_analysis.json", result["resume_analysis"])
+            
+            if result.get("job_analysis"):
+                write_json_file(f"{output_dir}/job_analysis.json", result["job_analysis"])
+            
+            if result.get("task_plan"):
+                write_json_file(f"{output_dir}/task_plan.json", result["task_plan"])
+            
+            if result.get("compliance_verification"):
+                write_json_file(f"{output_dir}/compliance_verification.json", result["compliance_verification"])
+            
+            if result.get("tailored_resume"):
+                with open(f"{output_dir}/tailored_resume.tex", "w", encoding="utf-8") as f:
+                    f.write(result["tailored_resume"])
+            
+            return result
+        except Exception as e:
+            # Handle any workflow execution errors
+            print(f"Error executing workflow: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
+            # Return a basic error result
+            return {
+                "error": f"Workflow execution failed: {str(e)}",
+                "completed_phases": []
+            }
