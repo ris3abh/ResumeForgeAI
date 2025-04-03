@@ -28,6 +28,8 @@ python3.9 -m venv venv
 source venv/bin/activate
 cd ResumeForgeAI
 pip install -e .
+
+export OPENAI_API_KEY=your_openai_api_key
 ```
 
 Usage
