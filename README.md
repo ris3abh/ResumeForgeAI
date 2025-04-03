@@ -21,6 +21,11 @@ From Source
 
 ```bash
 git clone https://github.com/ris3abh/ResumeForgeAI.git
+```
+
+```bash
+python3.9 -m venv venv
+source venv/bin/activate
 cd ResumeForgeAI
 pip install -e .
 ```
@@ -28,13 +33,15 @@ pip install -e .
 Usage
 
 - Command Line
+
 ```bash
 resume-optimizer --resume path/to/your/resume.tex --job-description path/to/job_description.txt --output optimized_resume.tex
 ```
 
 - As a Python Package
+
 ```bash
-pythonCopyfrom resume_optimizer.core.optimizer import ResumeOptimizer
+from resume_optimizer.core.optimizer import ResumeOptimizer
 ```
 
 # Initialize the optimizer
