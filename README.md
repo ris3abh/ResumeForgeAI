@@ -4,10 +4,10 @@ An AI-powered resume optimizer that tailors your resume to specific job descript
 
 #### Features
 
-✅ Job Description Analysis: Extracts key skills, requirements, and keywords from job descriptions
-✅ Resume Customization: Optimizes your technical skills and work experience sections
-✅ Iterative Improvement: Uses feedback to refine resume sections
-✅ ATS Compatibility Check: Evaluates how well your resume will perform with ATS systems
+- ✅ Job Description Analysis: Extracts key skills, requirements, and keywords from job descriptions
+- ✅ Resume Customization: Optimizes your technical skills and work experience sections
+- ✅ Iterative Improvement: Uses feedback to refine resume sections
+- ✅ ATS Compatibility Check: Evaluates how well your resume will perform with ATS systems
 
 #### Installation
 
