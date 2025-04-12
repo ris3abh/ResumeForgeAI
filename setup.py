@@ -7,7 +7,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "camel-ai",
+        "camel-ai==0.2.44",
         "colorama",
     ],
     entry_points={
@@ -15,8 +15,8 @@ setup(
             'resume-optimizer=resume_optimizer.cli:main',
         ],
     },
-    author="Resume Optimizer Team",
-    author_email="example@example.com",
+    author="Resume Optimizer WorkForce",
+    author_email="rishabh.sharma1103@gmail.com",
     description="AI-powered resume optimizer that tailors resumes to specific job descriptions",
     keywords="resume, job, AI, optimization, ATS",
     python_requires=">=3.7",
@@ -25,10 +25,6 @@ setup(
         "Intended Audience :: Job Seekers",
         "Topic :: Office/Business",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.12.10",
     ],
 )
