@@ -81,7 +81,7 @@ def main():
         traceback.print_exc()
         
         # Save error to log file
-        error_log_path = f"logs/error_{timestamp}.log"
+        error_log_path = f"logs/error_{timestamp}.log" 
         with open(error_log_path, 'w') as f:
             f.write(f"Error: {str(e)}\n\n")
             f.write(traceback.format_exc())
