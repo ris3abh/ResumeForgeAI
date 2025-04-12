@@ -19,7 +19,7 @@ class JobAnalyzer(BaseOptimizerAgent):
             system_message_content=(
                 "You are an expert at analyzing job descriptions for resume optimization. "
                 "Your task is to extract all relevant information that would help tailor a resume to "
-                "this specific job. You can identify hard skills, soft skills, keywords, job roles, "
+                "this specific job. You can identify hard skills, soft skills, keywords, job roles, technical keywords "
                 "and rank them according to their importance. You pay special attention to: "
                 "1. Requirements explicitly marked as 'must' or 'required' "
                 "2. Frequently mentioned technologies, concepts, or qualities "
@@ -76,7 +76,7 @@ class JobAnalyzer(BaseOptimizerAgent):
         print(f"Found {len(analysis_results.get('technical_skills', []))} technical skills, " 
               f"{len(analysis_results.get('soft_skills', []))} soft skills, and "
               f"{len(analysis_results.get('keywords', []))} keywords")
-        print(f"Top 3 critical requirements: {', '.join([c for c in analysis_results.get('critical', [])[:3]])}...")
+        print(f"Top 20 critical requirements: {', '.join([c for c in analysis_results.get('critical', [])[:20]])}...")
         
         return analysis_results
     

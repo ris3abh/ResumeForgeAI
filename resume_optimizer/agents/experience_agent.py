@@ -56,8 +56,8 @@ class ExperienceOptimizerAgent(BaseOptimizerAgent):
         experience_prompt = (
             f"Analyze this Job Description Analysis: \n\n<JD Analysis Start>\n{job_analysis_text}\n<JD Analysis End>\n\n"
             f"And this Resume Work Experience Section: \n\n<Resume Work Experience Section Start>\n{experience_section}\n<Resume Work Experience Section End>\n\n"
-            f"I would like you to make the work experience section well-tailored to incorporate the keywords, hard skills, and soft skills from the job analysis. "
-            f"Making the Work Experience section completely tailored for the job I want to apply to.\n\n"
+            f"I would like you to make the work experience section well-tailored to incorporate the keywords, hard skills, and soft skills from the job analysis."
+            f"Making the Work Experience section completely tailored for the job I want to apply to by adding all the required skills and keywords into the resume's work experience section.\n\n"
             f"Action Words List: {action_words_text}\n\n"
             f"Each bullet should start with one of the unique strong Actions Verb from the above list, should not contain any superfluous filler words"
             f"Make sure that the bullet points are 16-18 words long but they should be of considerable length.\n"
