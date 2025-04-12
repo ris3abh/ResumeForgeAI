@@ -20,6 +20,7 @@ mcp==1.6.0
 numpy==2.2.4
 openai==1.73.0
 pandas==2.2.3
+pillow==11.1.0
 psutil==5.9.8
 pydantic==2.11.3
 pydantic-settings==2.8.1
@@ -27,9 +28,11 @@ pydantic_core==2.33.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pytz==2025.2
+PyYAML==6.0.2
 referencing==0.36.2
 regex==2024.11.6
 requests==2.32.3
+-e git+https://github.com/ris3abh/ResumeForgeAI.git@90abeaff1160d8ede385ed39d4e2dd81e9592542#egg=resume_optimizer
 rpds-py==0.24.0
 six==1.17.0
 sniffio==1.3.1
