@@ -1,18 +1,30 @@
-"""Job analyzer for extracting key information from job descriptions."""
+"""Job analyzer for extracting key information from job descriptions with enhanced capabilities."""
 
 import re
+import logging
+from typing import Dict, Any, List, Optional, Union
+
+from camel.agents import ChatAgent
+from camel.messages import BaseMessage
+from camel.types import OpenAIBackendRole, TaskType
+from camel.tasks import Task
+from camel.utils import print_text_animated
+from colorama import Fore, Style
+
 from resume_optimizer.agents.base_agent import BaseOptimizerAgent
 from resume_optimizer.utils.text_utils import format_analysis_for_prompt
 
+logger = logging.getLogger(__name__)
 
 class JobAnalyzer(BaseOptimizerAgent):
-    """Agent for analyzing job descriptions."""
+    """Agent for analyzing job descriptions with enhanced capabilities."""
     
-    def __init__(self, model=None):
+    def __init__(self, model=None, verbose: bool = False):
         """Initialize the job analyzer agent.
         
         Args:
             model: Optional model to use
+            verbose: Whether to print detailed output
         """
         super().__init__(
             role_name="Job Description Analyzer",
@@ -28,15 +40,17 @@ class JobAnalyzer(BaseOptimizerAgent):
                 "5. Soft skills that indicate cultural fit or team dynamics "
                 "6. Unique aspects of the role that differentiate it from similar positions"
             ),
-            model=model
+            model=model,
+            use_memory=True
         )
+        self.verbose = verbose
     
-    def optimize(self, job_description, _=None):
-        """Analyze a job description.
+    def optimize(self, job_description: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Analyze a job description and extract structured information.
         
         Args:
             job_description: The job description text
-            _: Unused parameter (for interface consistency)
+            context: Optional additional context
             
         Returns:
             Dict containing analyzed job description data
@@ -67,20 +81,125 @@ class JobAnalyzer(BaseOptimizerAgent):
             f"Focus on being comprehensive but precise. Identify patterns, recurring themes, and implicit requirements."
         )
         
+        # Save job description to memory
+        self.save_to_memory(job_description, role="user")
+        
+        if self.verbose:
+            print(f"{Fore.CYAN}Analyzing job description...{Style.RESET_ALL}")
+        
         response = self.process(analysis_prompt)
+        
+        # Save analysis to memory
+        self.save_to_memory(response, role="assistant")
+        
         analysis_results = self._parse_enhanced_analysis_response(response)
         
-        print("\n✅ Job Description Analysis Complete")
-        
-        # Print a summary of what was found
-        print(f"Found {len(analysis_results.get('technical_skills', []))} technical skills, " 
-              f"{len(analysis_results.get('soft_skills', []))} soft skills, and "
-              f"{len(analysis_results.get('keywords', []))} keywords")
-        print(f"Top 20 critical requirements: {', '.join([c for c in analysis_results.get('critical', [])[:20]])}...")
+        if self.verbose:
+            print(f"\n{Fore.GREEN}✅ Job Description Analysis Complete{Style.RESET_ALL}")
+            print(f"Found {len(analysis_results.get('technical_skills', []))} technical skills, " 
+                  f"{len(analysis_results.get('soft_skills', []))} soft skills, and "
+                  f"{len(analysis_results.get('keywords', []))} keywords")
+            
+            # Display top critical requirements
+            if analysis_results.get('critical', []):
+                print(f"\n{Fore.YELLOW}Top Critical Requirements:{Style.RESET_ALL}")
+                for i, req in enumerate(analysis_results.get('critical', [])[:5], 1):
+                    print(f"{i}. {req}")
+                if len(analysis_results.get('critical', [])) > 5:
+                    print(f"...and {len(analysis_results.get('critical', [])) - 5} more")
         
         return analysis_results
     
-    def _parse_enhanced_analysis_response(self, response_content):
+    def identify_job_title(self, job_description: str) -> str:
+        """Extract the main job title from the job description.
+        
+        Args:
+            job_description: The job description text
+            
+        Returns:
+            The identified job title
+        """
+        prompt = (
+            f"Based on this job description, what is the EXACT job title?\n\n"
+            f"{job_description}\n\n"
+            f"Return ONLY the job title, with no additional text or explanation."
+        )
+        
+        response = self.process(prompt)
+        
+        # Clean up the response to get just the job title
+        job_title = response.strip()
+        job_title = re.sub(r'^(the|job|position|role|title)\s*:?\s*', '', job_title, flags=re.IGNORECASE)
+        
+        return job_title.strip()
+    
+    def identify_key_requirements(self, job_description: str, top_n: int = 10) -> List[str]:
+        """Extract the top requirements from the job description.
+        
+        Args:
+            job_description: The job description text
+            top_n: Number of top requirements to extract
+            
+        Returns:
+            List of key requirements
+        """
+        prompt = (
+            f"Based on this job description, what are the {top_n} MOST IMPORTANT skills or requirements?\n\n"
+            f"{job_description}\n\n"
+            f"List only the {top_n} most critical requirements, ordered by importance. "
+            f"Format as a numbered list (1., 2., etc.) with no additional text."
+        )
+        
+        response = self.process(prompt)
+        
+        # Extract requirements from numbered list
+        requirements = []
+        for line in response.strip().split('\n'):
+            # Match numbered items like "1. Requirement" or "1) Requirement"
+            match = re.match(r'^\d+[\.\)]\s*(.+)$', line)
+            if match:
+                requirements.append(match.group(1).strip())
+        
+        return requirements
+    
+    def create_task_for_optimizer(self, job_description: str) -> Task:
+        """Create a CAMEL task based on job description analysis.
+        
+        Args:
+            job_description: The job description text
+            
+        Returns:
+            A CAMEL Task object for resume optimization
+        """
+        # Analyze the job
+        analysis = self.optimize(job_description)
+        
+        # Extract key info for task content
+        job_title = analysis.get("core_role", {}).get("job_title", "the position")
+        required_skills = [skill["skill"] for skill in analysis.get("technical_skills", []) 
+                          if skill.get("score", 0) >= 8]
+        critical_reqs = analysis.get("critical", [])[:5]
+        
+        # Create task content
+        task_content = (
+            f"Optimize resume for {job_title} position with focus on these critical requirements: "
+            f"{', '.join(critical_reqs)}. Ensure inclusion of these technical skills: "
+            f"{', '.join(required_skills[:7])}."
+        )
+        
+        # Create and return task
+        task = Task(
+            content=task_content,
+            id="resume_optimization",
+        )
+        
+        # Store analysis in task metadata
+        task.analysis_results = analysis
+        task.job_description = job_description
+        
+        return task
+    
+    def _parse_enhanced_analysis_response(self, response_content: str) -> Dict[str, Any]:
         """Parse the job description analysis response to extract structured data.
         
         This enhanced parser extracts more detailed information from the analysis.
@@ -260,14 +379,3 @@ class JobAnalyzer(BaseOptimizerAgent):
                 result["optimization_strategy"]["de-emphasize"] = deemph
         
         return result
-    
-    def format_analysis(self, analysis):
-        """Format the job description analysis for inclusion in a prompt.
-        
-        Args:
-            analysis: Dictionary containing analysis results
-            
-        Returns:
-            Formatted string representation of the analysis
-        """
-        return format_analysis_for_prompt(analysis)
