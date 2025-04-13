@@ -1,6 +1,7 @@
 # resume_optimizer/tasks/task_utils.py
 from typing import Dict, List, Any
 from camel.tasks import Task
+from resume_optimizer.tasks.task_definitions import get_task_metadata
 
 def parse_task_result(task: Task) -> Dict[str, Any]:
     """Parse the result of a task into a structured format."""
@@ -50,20 +51,22 @@ def parse_task_result(task: Task) -> Dict[str, Any]:
 
 def format_task_for_agent(task: Task) -> str:
     """Format a task for consumption by an agent."""
+    metadata = get_task_metadata(task.id)
+    
     task_desc = f"Task ID: {task.id}\nTask: {task.content}\n\n"
     
     # Add metadata if available
-    if hasattr(task, "resume_path") and task.resume_path:
-        task_desc += f"Resume Path: {task.resume_path}\n"
-    if hasattr(task, "section_name") and task.section_name:
-        task_desc += f"Section: {task.section_name}\n"
-    if hasattr(task, "job_description") and task.job_description:
-        task_desc += f"Job Description:\n{task.job_description}\n\n"
-    if hasattr(task, "section_content") and task.section_content:
-        task_desc += f"Section Content:\n{task.section_content}\n\n"
-    if hasattr(task, "analysis_results") and task.analysis_results:
+    if metadata.get("resume_path"):
+        task_desc += f"Resume Path: {metadata['resume_path']}\n"
+    if metadata.get("section_name"):
+        task_desc += f"Section: {metadata['section_name']}\n"
+    if metadata.get("job_description"):
+        task_desc += f"Job Description:\n{metadata['job_description']}\n\n"
+    if metadata.get("section_content"):
+        task_desc += f"Section Content:\n{metadata['section_content']}\n\n"
+    if metadata.get("analysis_results"):
         task_desc += "Analysis Results:\n"
-        for key, value in task.analysis_results.items():
+        for key, value in metadata["analysis_results"].items():
             task_desc += f"- {key}: {value}\n"
     
     return task_desc

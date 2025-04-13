@@ -3,85 +3,97 @@ from camel.tasks import Task
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-class ResumeTask(Task):
-    """Extended Task class for resume optimization tasks."""
-    
-    def __init__(
-        self, 
-        content: str, 
-        id: str, 
-        resume_path: Optional[Union[str, Path]] = None,
-        job_description: Optional[str] = None,
-        section_name: Optional[str] = None,
-        section_content: Optional[str] = None,
-        analysis_results: Optional[Dict] = None,
-        dependencies: Optional[List[str]] = None
-    ):
-        """Initialize a resume task with resume-specific metadata."""
-        super().__init__(content=content, id=id)
-        self.resume_path = Path(resume_path) if resume_path else None
-        self.job_description = job_description
-        self.section_name = section_name
-        self.section_content = section_content
-        self.analysis_results = analysis_results or {}
-        self.dependencies = dependencies or []
+# Task metadata registry to store additional data
+task_metadata = {}
 
-def create_analyze_job_task(job_description: str, task_id: str = "analyze_job") -> ResumeTask:
+def create_analyze_job_task(job_description: str, task_id: str = "analyze_job") -> Task:
     """Create a job analysis task."""
-    return ResumeTask(
+    task = Task(
         content="Analyze job description to extract skills, requirements, and keywords",
         id=task_id,
-        job_description=job_description
     )
+    # Store job description in metadata registry
+    task_metadata[task_id] = {"job_description": job_description}
+    return task
 
-def create_extract_sections_task(resume_path: str, task_id: str = "extract_sections") -> ResumeTask:
+def create_extract_sections_task(resume_path: str, task_id: str = "extract_sections") -> Task:
     """Create a section extraction task."""
-    return ResumeTask(
+    task = Task(
         content="Extract sections from the resume",
         id=task_id,
-        resume_path=resume_path
     )
+    task_metadata[task_id] = {"resume_path": resume_path}
+    return task
 
 def create_optimize_section_task(
     section_name: str, 
     section_content: str, 
     analysis_results: Dict, 
     task_id: str
-) -> ResumeTask:
+) -> Task:
     """Create a section optimization task."""
-    return ResumeTask(
+    task = Task(
         content=f"Optimize the {section_name} section based on job analysis",
         id=task_id,
-        section_name=section_name,
-        section_content=section_content,
-        analysis_results=analysis_results,
-        dependencies=["analyze_job"]
     )
+    task_metadata[task_id] = {
+        "section_name": section_name,
+        "section_content": section_content,
+        "analysis_results": analysis_results,
+        "dependencies": ["analyze_job"]
+    }
+    return task
 
 def create_evaluate_task(
     original_content: str, 
     optimized_content: str, 
     analysis_results: Dict, 
     task_id: str
-) -> ResumeTask:
+) -> Task:
     """Create an evaluation task."""
-    return ResumeTask(
+    task = Task(
         content="Evaluate the optimized resume against job requirements",
         id=task_id,
-        section_content=original_content,
-        analysis_results=analysis_results
     )
+    task_metadata[task_id] = {
+        "section_content": original_content,
+        "optimized_content": optimized_content,
+        "analysis_results": analysis_results
+    }
+    return task
 
 def create_assemble_resume_task(
     resume_path: str, 
     optimized_sections: Dict[str, str], 
     task_id: str = "assemble_resume"
-) -> ResumeTask:
+) -> Task:
     """Create a task to assemble optimized sections into a complete resume."""
-    return ResumeTask(
+    task = Task(
         content="Assemble optimized sections into a complete resume",
         id=task_id,
-        resume_path=resume_path,
-        # Store optimized sections in the analysis_results field temporarily
-        analysis_results={"optimized_sections": optimized_sections}
     )
+    task_metadata[task_id] = {
+        "resume_path": resume_path,
+        "optimized_sections": optimized_sections
+    }
+    return task
+
+def create_ats_check_task(
+    resume_path: str,
+    job_description: str,
+    task_id: str = "check_ats_compatibility"
+) -> Task:
+    """Create a task to check ATS compatibility."""
+    task = Task(
+        content="Check ATS compatibility of the optimized resume",
+        id=task_id,
+    )
+    task_metadata[task_id] = {
+        "resume_path": resume_path,
+        "job_description": job_description
+    }
+    return task
+
+def get_task_metadata(task_id: str) -> Dict:
+    """Get metadata for a task."""
+    return task_metadata.get(task_id, {})

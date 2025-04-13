@@ -10,6 +10,7 @@ from resume_optimizer.agents.evaluator_agent import EvaluatorAgent
 from resume_optimizer.utils.latex_utils import (
     read_latex_file, extract_section, replace_section, extract_latex_content
 )
+from resume_optimizer.tasks.task_definitions import get_task_metadata
 from resume_optimizer.utils.model_factory import create_default_model
 from resume_optimizer.tasks.task_utils import format_task_for_agent, parse_task_result
 from resume_optimizer.utils.text_utils import format_analysis_for_prompt
@@ -46,10 +47,11 @@ class JobAnalysisWorker(BaseOptimizerAgent):
     
     def process_task(self, task: Task) -> str:
         """Process the job analysis task."""
-        if not hasattr(task, "job_description") or not task.job_description:
-            return "Error: No job description provided in task"
+        metadata = get_task_metadata(task.id)
+        job_description = metadata.get("job_description")
         
-        job_description = task.job_description
+        if not job_description:
+            return "Error: No job description provided in task"
         
         analysis_prompt = (
             f"Analyze this job description thoroughly to help optimize a resume for the candidate:\n\n"
