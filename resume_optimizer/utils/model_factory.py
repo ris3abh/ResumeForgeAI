@@ -27,10 +27,10 @@ def create_default_model(model_type: Optional[ModelType] = None):
         model_type = model_type or ModelType.GPT_4O_MINI
         
         # Create model config with reasonable defaults
+        # Only use parameters that are valid for the ChatGPTConfig
         model_config = ChatGPTConfig(
             temperature=0.7,
             top_p=0.95,
-            request_timeout=120,
         ).as_dict()
         
         # Check for API key
@@ -61,7 +61,6 @@ def create_fallback_model():
         model_config = ChatGPTConfig(
             temperature=0.5,  # Lower temperature for more deterministic outputs
             max_tokens=2048,  # Limit token usage
-            request_timeout=60,  # Shorter timeout
         ).as_dict()
         
         return CamelModelFactory.create(
