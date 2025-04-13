@@ -188,12 +188,12 @@ class WorkforceResumeOptimizer:
         if self.verbose:
             print(f"{Fore.YELLOW}Analyzing job description...{Style.RESET_ALL}")
         
-        # Create a job analysis task
+        # Create a job analysis task with additional_info
         task = Task(
             content="Analyze job description to extract skills, requirements, and keywords",
             id="analyze_job",
+            additional_info={"job_description": self.job_description}  # Store in additional_info
         )
-        task.job_description = self.job_description
         
         # Process the task using the workforce
         analyze_result = self.workforce.process_task(task)

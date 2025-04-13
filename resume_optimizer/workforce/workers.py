@@ -47,9 +47,7 @@ class JobAnalysisWorker(BaseOptimizerAgent):
     
     def process_task(self, task: Task) -> str:
         """Process the job analysis task."""
-        metadata = get_task_metadata(task.id)
-        job_description = metadata.get("job_description")
-        
+        job_description = task.additional_info.get("job_description")  # Retrieve from additional_info
         if not job_description:
             return "Error: No job description provided in task"
         
@@ -212,12 +210,12 @@ class SkillsOptimizationWorker(BaseOptimizerAgent):
         if not hasattr(task, "section_name") or not task.section_name or not hasattr(task, "section_content") or not task.section_content:
             return "Error: Missing section name or content in task"
         
-        if not hasattr(task, "analysis_results") or not task.analysis_results:
+        analysis_results = task.additional_info.get("analysis_results")  # Retrieve from additional_info
+        if not analysis_results:
             return "Error: Missing job analysis results in task"
         
         section_name = task.section_name
         section_content = task.section_content
-        analysis_results = task.analysis_results
         
         # Format the job analysis for the prompt
         job_analysis_text = format_analysis_for_prompt(analysis_results)
@@ -227,7 +225,7 @@ class SkillsOptimizationWorker(BaseOptimizerAgent):
             f"Analyze this Job Description Analysis: \n\n<JD Analysis Start>\n{job_analysis_text}\n<JD Analysis End>\n\n"
             f"And this Resume Technical Skill Section: \n\n<Resume Technical Skill Section Start>\n{section_content}\n<Resume Technical Skill Section End>\n\n"
             f"Your task is to optimize this skills section to achieve an excellent ATS match (90%+ score) in one pass. You should:\n\n"
-            f"1. Add ALL keywords and skills from the job description that are missing from the skills section\n"
+            f"1. Add ALL keywords and skills from the job analysis that are missing from the skills section\n"
             f"2. Place them into appropriate subcategories like the existing ones in the skills section\n"
             f"3. Remove skills which are not relevant to the job description or have low scores in the analysis\n"
             f"4. Prioritize required skills and order them by importance\n"
@@ -302,12 +300,12 @@ class ExperienceOptimizationWorker(BaseOptimizerAgent):
         if not hasattr(task, "section_name") or not task.section_name or not hasattr(task, "section_content") or not task.section_content:
             return "Error: Missing section name or content in task"
         
-        if not hasattr(task, "analysis_results") or not task.analysis_results:
+        analysis_results = task.additional_info.get("analysis_results")  # Retrieve from additional_info
+        if not analysis_results:
             return "Error: Missing job analysis results in task"
         
         section_name = task.section_name
         section_content = task.section_content
-        analysis_results = task.analysis_results
         
         # Format the job analysis for the prompt
         job_analysis_text = format_analysis_for_prompt(analysis_results)
@@ -383,12 +381,12 @@ class SummaryOptimizationWorker(BaseOptimizerAgent):
         if not hasattr(task, "section_name") or not task.section_name or not hasattr(task, "section_content") or not task.section_content:
             return "Error: Missing section name or content in task"
         
-        if not hasattr(task, "analysis_results") or not task.analysis_results:
+        if not task.metadata or "analysis_results" not in task.metadata:
             return "Error: Missing job analysis results in task"
         
         section_name = task.section_name
         section_content = task.section_content
-        analysis_results = task.analysis_results
+        analysis_results = task.metadata["analysis_results"]
         
         # If the section is missing (some resumes might not have a summary), create a placeholder
         if not section_content:
@@ -512,11 +510,11 @@ class ATSCheckWorker(BaseOptimizerAgent):
         if not hasattr(task, "resume_path") or not task.resume_path:
             return "Error: No resume path provided in task"
         
-        if not hasattr(task, "job_description") or not task.job_description:
+        if not task.metadata or "job_description" not in task.metadata:
             return "Error: No job description provided in task"
         
         resume_path = task.resume_path
-        job_description = task.job_description
+        job_description = task.metadata["job_description"]
         
         # Read the resume
         resume_content = read_latex_file(str(resume_path))
