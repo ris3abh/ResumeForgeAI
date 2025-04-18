@@ -1,0 +1,117 @@
+\documentclass[letterpaper,10pt]{article}
+
+% Packages
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\textheight}{1in}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Section formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Custom commands
+\newcommand{\resumeItem}[2]{
+  \item\small{
+    \textbf{#1}{: #2 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-5pt}
+}
+
+\newcommand{\resumeSubItem}[2]{\resumeItem{#1}{#2}\vspace{-4pt}}
+
+\renewcommand{\labelitemii}{$\circ$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=*]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Huge Alex Johnson} \\ \vspace{1pt}
+    \small 123-456-7890 $|$ \href{mailto:alex.johnson@email.com}{alex.johnson@email.com} $|$ 
+    \href{https://linkedin.com/in/alexjohnson}{linkedin.com/in/alexjohnson} $|$
+    San Francisco, CA
+\end{center}
+
+% Summary
+\section{Summary}
+Software engineer with 5 years of experience developing web applications and services. Proficient in Python and JavaScript with a focus on building scalable backend systems.
+
+% Experience
+\section{Experience}
+\resumeSubHeadingListStart
+
+\resumeSubheading
+{TechCorp Inc.}{San Francisco, CA}
+{Senior Software Engineer}{January 2020 - Present}
+\resumeItemListStart
+\resumeItem{Backend Development}{Designed and implemented RESTful APIs using Django and FastAPI for a cloud-native e-commerce platform that handles 10,000+ daily transactions, ensuring high performance and scalability.}
+\resumeItem{Database Management}{Optimized PostgreSQL and MongoDB database queries, achieving a 40\% reduction in response time and enhancing data storage solutions.}
+\resumeItem{Microservices Architecture}{Architected and deployed microservices for the payment processing system, improving system reliability and maintainability.}
+\resumeItem{Containerization}{Utilized Docker for containerization of applications, orchestrating deployments in AWS with Kubernetes for seamless scaling and management.}
+\resumeItem{Team Leadership}{Led a team of 4 developers in Agile methodology, ensuring effective collaboration and communication within the team to deliver high-quality software solutions.}
+\resumeItemListEnd
+
+\resumeSubheading
+{DataSystems LLC}{Oakland, CA}
+{Software Engineer}{June 2017 - December 2019}
+\resumeItemListStart
+\resumeItem{Full Stack Development}{Developed and deployed responsive web applications utilizing React.js and Node.js, integrating with RESTful APIs to optimize user experience.}
+\resumeItem{Cloud Infrastructure}{Managed AWS cloud infrastructure, deploying and containerizing applications with Docker, and implementing best practices for CI/CD pipelines.}
+\resumeItem{Agile Methodology}{Actively participated in daily stand-ups and biweekly sprint planning sessions, fostering collaboration and ensuring project timelines were met.}
+\resumeItemListEnd
+
+\resumeSubHeadingListEnd\section{Skills}
+\resumeSubHeadingListStart
+\resumeSubItem{Languages}{Python, JavaScript, HTML/CSS, SQL}
+\resumeSubItem{Frameworks \& Libraries}{Django, FastAPI, Flask, React.js, Node.js, Express.js}
+\resumeSubItem{Database Technologies}{PostgreSQL, MongoDB}
+\resumeSubItem{Containerization \& Orchestration}{Docker, Kubernetes}
+\resumeSubItem{Cloud Platforms}{AWS, GCP, Azure}
+\resumeSubItem{Methodologies}{Agile Development, Test-Driven Development, CI/CD}
+\resumeSubItem{Other Skills}{RESTful API Development, Microservices Architecture, Real-time Data Processing, Message Brokers (RabbitMQ, Kafka), Problem-Solving, Attention to Detail, Communication, Collaboration}
+\resumeSubHeadingListEnd\section{Education}
+\resumeSubHeadingListStart
+\resumeSubheading
+{University of California, Berkeley}{Berkeley, CA}
+{Bachelor of Science in Computer Science}{August 2013 - May 2017}
+\resumeSubHeadingListEnd
+
+\end{document}
