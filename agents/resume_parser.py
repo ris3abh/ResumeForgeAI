@@ -5,28 +5,18 @@ Resume Parser - Identifies sections in a LaTeX resume.
 import re
 from camel.agents import ChatAgent
 from camel.messages import BaseMessage
+from config.prompts import RESUME_PARSER_SYSTEM_PROMPT, RESUME_PARSING_PROMPT
 
-
-def create_resume_parser_agent():
+def create_resume_parser_agent(model=None):
     """Create a resume parser agent."""
-    system_message = """
-    You are a LaTeX resume parser. Your job is to:
-    1. Identify the structure of LaTeX resumes without modifying them
-    2. Locate the work experience and skills sections precisely
-    3. Extract the content within these sections for analysis
-    4. Document the exact LaTeX commands and structure used
-    5. Create a map of the document that will allow for precise modifications later
-    """
-    
     # Create the system message for the agent
     system_msg = BaseMessage.make_assistant_message(
         role_name="Resume Parser",
-        content=system_message
+        content=RESUME_PARSER_SYSTEM_PROMPT
     )
     
     # Create and return the agent
-    return ChatAgent(system_message=system_msg)
-
+    return ChatAgent(system_message=system_msg, model=model)
 
 def identify_section_boundaries(latex_content, section_name):
     """
@@ -62,7 +52,6 @@ def identify_section_boundaries(latex_content, section_name):
     
     return None, None
 
-
 def extract_section_content(latex_content, section_name):
     """
     Extract the content of a section from the LaTeX resume.
@@ -72,42 +61,36 @@ def extract_section_content(latex_content, section_name):
         section_name (str): The name of the section to extract
         
     Returns:
-        str: The content of the section, or an empty string if not found
+        dict: The section info with name, content, start and end positions
     """
     start, end = identify_section_boundaries(latex_content, section_name)
     if start is not None and end is not None:
-        return latex_content[start:end]
-    return ""
+        return {
+            "name": section_name,
+            "content": latex_content[start:end],
+            "start": start,
+            "end": end
+        }
+    return None
 
-
-def parse_resume(latex_content):
+def parse_resume(latex_content, agent=None, model=None):
     """
     Parse a LaTeX resume to identify its structure and key sections.
     
     Args:
         latex_content (str): The LaTeX resume content
+        agent (ChatAgent, optional): An existing agent to use
+        model: Model to use if creating a new agent
         
     Returns:
         dict: The parsed resume structure
     """
-    # Create the agent
-    agent = create_resume_parser_agent()
+    # Create the agent if not provided
+    if agent is None:
+        agent = create_resume_parser_agent(model)
     
     # Prepare the prompt
-    prompt = f"""
-    Please analyze the following LaTeX resume to identify its structure.
-    Focus especially on locating the "experience" and "skills" sections.
-    
-    LaTeX Resume:
-    {latex_content[:3000]}  # Limiting to first 3000 chars for this prompt
-    
-    For each identified section, provide:
-    1. The section name
-    2. The LaTeX command used to define the section
-    3. Any key environments or formatting used within the section
-    
-    Please be precise about the experience and skills sections, as we'll need to modify them later.
-    """
+    prompt = RESUME_PARSING_PROMPT.format(resume_content=latex_content)
     
     # Create the user message
     user_message = BaseMessage.make_user_message(
@@ -120,41 +103,27 @@ def parse_resume(latex_content):
     agent_analysis = response.msgs[0].content
     
     # Now let's do our own parsing to get exact section boundaries
-    experience_section_names = ["experience", "work experience", "professional experience", 
-                               "employment history", "work history"]
-    skills_section_names = ["skills", "technical skills", "competencies", 
-                           "core competencies", "expertise"]
+    common_section_names = {
+        "summary": ["summary", "professional summary", "profile", "about me"],
+        "experience": ["experience", "work experience", "professional experience", "employment history", "work history"],
+        "skills": ["skills", "technical skills", "competencies", "core competencies", "expertise"],
+        "education": ["education", "academic background", "academic history", "qualifications"],
+        "projects": ["projects", "project experience", "relevant projects"],
+        "certifications": ["certifications", "certificates", "professional certifications"],
+        "publications": ["publications", "research", "papers"],
+        "awards": ["awards", "honors", "achievements", "recognitions"]
+    }
     
-    # Find experience section
-    experience_section = None
-    for name in experience_section_names:
-        content = extract_section_content(latex_content, name)
-        if content:
-            start, end = identify_section_boundaries(latex_content, name)
-            experience_section = {
-                "name": name,
-                "content": content,
-                "start": start,
-                "end": end
-            }
-            break
-    
-    # Find skills section
-    skills_section = None
-    for name in skills_section_names:
-        content = extract_section_content(latex_content, name)
-        if content:
-            start, end = identify_section_boundaries(latex_content, name)
-            skills_section = {
-                "name": name,
-                "content": content,
-                "start": start,
-                "end": end
-            }
-            break
+    # Parse all sections
+    sections = {}
+    for section_type, section_names in common_section_names.items():
+        for name in section_names:
+            section = extract_section_content(latex_content, name)
+            if section:
+                sections[section_type] = section
+                break
     
     return {
         "agent_analysis": agent_analysis,
-        "experience_section": experience_section,
-        "skills_section": skills_section
+        "sections": sections
     }

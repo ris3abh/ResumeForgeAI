@@ -4,56 +4,37 @@ Job Analyzer - Extracts key requirements from job descriptions.
 
 from camel.agents import ChatAgent
 from camel.messages import BaseMessage
+from config.prompts import JOB_ANALYZER_SYSTEM_PROMPT, JOB_ANALYSIS_PROMPT
 
-
-def create_job_analyzer_agent():
+def create_job_analyzer_agent(model=None):
     """Create a job analyzer agent."""
-    system_message = """
-    You are a job description analyzer. Your task is to:
-    1. Extract hard skills (technical requirements) from job descriptions
-    2. Identify soft skills mentioned or implied in the job posting
-    3. Recognize industry-specific keywords and terminology
-    4. Categorize requirements by importance (required vs. preferred)
-    5. Create a structured list of keywords and phrases to include in the resume
-    """
-    
     # Create the system message for the agent
     system_msg = BaseMessage.make_assistant_message(
         role_name="Job Analyzer",
-        content=system_message
+        content=JOB_ANALYZER_SYSTEM_PROMPT
     )
     
     # Create and return the agent
-    return ChatAgent(system_message=system_msg)
+    return ChatAgent(system_message=system_msg, model=model)
 
-
-def analyze_job_description(job_description):
+def analyze_job_description(job_description, agent=None, model=None):
     """
     Analyze a job description to extract key requirements.
     
     Args:
         job_description (str): The job description text
+        agent (ChatAgent, optional): An existing agent to use
+        model: Model to use if creating a new agent
         
     Returns:
-        dict: Structured job requirements
+        str: Structured job requirements
     """
-    # Create the agent
-    agent = create_job_analyzer_agent()
+    # Create the agent if not provided
+    if agent is None:
+        agent = create_job_analyzer_agent(model)
     
     # Prepare the prompt
-    prompt = f"""
-    Please analyze the following job description to extract key requirements.
-    Provide your response in a structured format with these categories:
-    1. Hard Skills (technical requirements)
-    2. Soft Skills
-    3. Experience Requirements
-    4. Education Requirements
-    5. Industry-Specific Keywords
-    6. Must-Have vs. Nice-to-Have
-    
-    Job Description:
-    {job_description}
-    """
+    prompt = JOB_ANALYSIS_PROMPT.format(job_description=job_description)
     
     # Create the user message
     user_message = BaseMessage.make_user_message(

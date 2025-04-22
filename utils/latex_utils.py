@@ -4,6 +4,36 @@ LaTeX Utilities - Helper functions for working with LaTeX documents.
 
 import re
 
+def extract_preamble(latex_content):
+    """
+    Extract the preamble from a LaTeX document.
+    
+    Args:
+        latex_content (str): The LaTeX document content
+        
+    Returns:
+        str: The preamble content
+    """
+    match = re.search(r'(.*?)\\begin\{document\}', latex_content, re.DOTALL)
+    if match:
+        return match.group(1)
+    return ""
+
+def extract_document_body(latex_content):
+    """
+    Extract the document body from a LaTeX document.
+    
+    Args:
+        latex_content (str): The LaTeX document content
+        
+    Returns:
+        str: The document body content
+    """
+    body_match = re.search(r'\\begin\{document\}(.*?)\\end\{document\}', latex_content, re.DOTALL)
+    if body_match:
+        return body_match.group(1)
+    return ""
+
 def fix_latex_issues(modified_content, original_content):
     """
     Fix common LaTeX issues in the modified content.
@@ -59,69 +89,6 @@ def fix_latex_issues(modified_content, original_content):
     modified_content = balance_braces(modified_content)
     
     return modified_content
-
-
-def extract_preamble(latex_content):
-    """
-    Extract the preamble from a LaTeX document.
-    
-    Args:
-        latex_content (str): The LaTeX document content
-        
-    Returns:
-        str: The preamble content
-    """
-    match = re.search(r'(.*?)\\begin\{document\}', latex_content, re.DOTALL)
-    if match:
-        return match.group(1)
-    return ""
-
-
-def extract_document_body(latex_content):
-    """
-    Extract the document body from a LaTeX document.
-    
-    Args:
-        latex_content (str): The LaTeX document content
-        
-    Returns:
-        str: The document body content
-    """
-    body_match = re.search(r'\\begin\{document\}(.*?)\\end\{document\}', latex_content, re.DOTALL)
-    if body_match:
-        return body_match.group(1)
-    return ""
-
-
-def validate_latex_syntax(latex_content):
-    """
-    Perform basic validation of LaTeX syntax.
-    
-    Args:
-        latex_content (str): The LaTeX document content
-        
-    Returns:
-        bool: True if the syntax appears valid, False otherwise
-    """
-    # Check for balanced braces
-    brace_count = 0
-    for char in latex_content:
-        if char == '{':
-            brace_count += 1
-        elif char == '}':
-            brace_count -= 1
-        if brace_count < 0:
-            return False
-    
-    # Check for essential document structure
-    has_document_class = bool(re.search(r'\\documentclass', latex_content))
-    has_begin_document = bool(re.search(r'\\begin\{document\}', latex_content))
-    has_end_document = bool(re.search(r'\\end\{document\}', latex_content))
-    
-    return (brace_count == 0 and 
-            has_document_class and 
-            has_begin_document and 
-            has_end_document)
 
 def compare_latex_structure(original, modified):
     """
@@ -187,3 +154,47 @@ def compare_latex_structure(original, modified):
             issues.append(f"Custom command usage mismatch: {cmd} appears {orig_count} times in original but {mod_count} times in modified")
     
     return len(issues) == 0, issues
+
+def enhance_resume_bullet_points(latex_content):
+    """
+    Enhance resume bullet points with strong action verbs and proper length.
+    
+    Args:
+        latex_content (str): The LaTeX resume content
+        
+    Returns:
+        str: Enhanced LaTeX content
+    """
+    from config.prompts import ACTION_VERBS
+    import random
+    
+    # Find all resumeItem entries
+    resume_items = re.finditer(r'\\resumeItem\{([^}]*)\}\{([^}]*)\}', latex_content)
+    
+    enhanced_content = latex_content
+    offset = 0  # Track position changes due to replacements
+    
+    for item in resume_items:
+        original_text = item.group(0)
+        title = item.group(1)
+        description = item.group(2)
+        
+        # Check if the description starts with a strong action verb
+        words = description.strip().split()
+        if words and words[0] not in ACTION_VERBS:
+            # Replace with a random action verb
+            new_verb = random.choice(ACTION_VERBS)
+            new_description = new_verb + description[len(words[0]):]
+            
+            # Create the new item text
+            new_text = f"\\resumeItem{{{title}}}{{{new_description}}}"
+            
+            # Replace in the content
+            start_pos = item.start() + offset
+            end_pos = item.end() + offset
+            enhanced_content = enhanced_content[:start_pos] + new_text + enhanced_content[end_pos:]
+            
+            # Update offset
+            offset += len(new_text) - len(original_text)
+    
+    return enhanced_content
