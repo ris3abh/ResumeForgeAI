@@ -1,0 +1,23 @@
+[project]
+name = "resumeautomation"
+version = "0.1.0"
+description = "ResumeAutomation using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.95.0,<1.0.0"
+]
+
+[project.scripts]
+resumeautomation = "resumeautomation.main:run"
+run_crew = "resumeautomation.main:run"
+train = "resumeautomation.main:train"
+replay = "resumeautomation.main:replay"
+test = "resumeautomation.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"

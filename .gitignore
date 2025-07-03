@@ -1,6 +1,0 @@
-venv
-.env
-__pycache__
-*.egg-info
-debug_output
-evaluation_output
