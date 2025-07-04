@@ -2,10 +2,38 @@
 name = "resumeautomation"
 version = "0.1.0"
 description = "ResumeAutomation using crewAI"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Rishabh Sharma", email = "rishabh.sharma1103@gmail.com" }]
 requires-python = ">=3.10,<3.13"
 dependencies = [
-    "crewai[tools]>=0.95.0,<1.0.0"
+    # Core CrewAI
+    "crewai[tools]>=0.95.0,<1.0.0",
+    
+    # Google APIs
+    "google-api-python-client>=2.0.0",
+    "google-auth-oauthlib>=1.0.0",
+    "google-auth>=2.0.0",
+    
+    # PDF processing (visual inspection)
+    "PyMuPDF>=1.23.0",  # fitz - excellent for PDF analysis
+    "pdfplumber>=0.11.0",  # detailed PDF structure analysis
+    "pypdf>=5.0.0",  # backup PDF reader
+    
+    # Image processing (for visual analysis)
+    "Pillow>=10.0.0",
+    "opencv-python>=4.8.0",
+    
+    # OCR (lightweight)
+    "pytesseract>=0.3.10",
+    "easyocr>=1.7.0",  # better than tesseract for some cases
+    
+    # LaTeX processing
+    "PyLaTeX>=1.4.0",
+    "jinja2>=3.0.0",
+    
+    # Core utilities
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.28.0",
 ]
 
 [project.scripts]

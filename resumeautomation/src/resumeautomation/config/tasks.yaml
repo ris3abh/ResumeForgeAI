@@ -1,17 +1,114 @@
-research_task:
+monitor_new_requests:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is 2024.
+    Monitor the Google Sheets for new resume generation requests. Look for rows where the Status 
+    column is empty, "new", or "pending". Extract all relevant information including:
+    - Job Title
+    - Company Name
+    - Job Description
+    - Apply Link
+    - Any additional requirements or preferences
+    Return detailed information about any new requests found, including the row number for status updates.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    A JSON object containing details of new resume requests including job_title, company_name, 
+    job_description, requirements, row_number, and any other relevant data extracted from the sheet.
+    If no new requests are found, return an empty result with appropriate message.
+  agent: sheet_monitor
 
-reporting_task:
+analyze_base_resume:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Retrieve and analyze the base resume template from the Google Drive Templates folder. 
+    Extract the structure and content including:
+    - Personal information (name, contact details)
+    - Professional summary or objective
+    - Work experience with roles, companies, and achievements
+    - Education background
+    - Technical skills and competencies
+    - Projects and certifications
+    - Overall formatting and layout structure
+    Parse this information into a structured format that can be used for customization.
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    A structured JSON object containing all resume sections with their content, formatting
+    information, and metadata about the resume structure. This will serve as the base for
+    generating customized versions.
+  agent: base_resume_analyzer
+
+generate_customized_resume:
+  description: >
+    Using the job requirements from the sheet monitoring and the base resume analysis,
+    generate a customized LaTeX resume. The customization should:
+    - Highlight relevant experience and skills for the specific job
+    - Adjust the professional summary to match job requirements
+    - Prioritize relevant projects and achievements
+    - Ensure ATS compatibility and professional formatting
+    - Use appropriate keywords from the job description
+    - Maintain professional LaTeX formatting with proper spacing
+    Create the LaTeX file and save it to the appropriate output directory.
+  expected_output: >
+    A complete LaTeX (.tex) file that is customized for the specific job requirements,
+    with confirmation of file creation, path, and a summary of customizations made.
+  agent: latex_generator
+  context: [monitor_new_requests, analyze_base_resume]
+
+compile_and_validate_pdf:
+  description: >
+    Compile the generated LaTeX file into a PDF and perform comprehensive validation:
+    - Convert LaTeX to PDF using pdflatex
+    - Verify the PDF is exactly one page
+    - Check formatting quality and readability
+    - Analyze text density and layout efficiency
+    - Identify any formatting issues or problems
+    - Provide detailed analysis of the PDF structure
+    If the PDF is not one page or has issues, provide specific recommendations for optimization.
+  expected_output: >
+    A comprehensive validation report including page count, formatting analysis, quality assessment,
+    and specific recommendations if optimization is needed. Include the PDF file path and status.
+  agent: pdf_validator
+  context: [generate_customized_resume]
+
+optimize_if_needed:
+  description: >
+    If the PDF validation indicates the resume is longer than one page or has formatting issues,
+    optimize the LaTeX source to meet requirements:
+    - Reduce content density while maintaining impact
+    - Adjust margins, font sizes, and spacing
+    - Prioritize most relevant information
+    - Remove or condense less critical content
+    - Maintain professional appearance and readability
+    - Re-compile and validate the optimized version
+    Continue optimization iterations until the resume fits exactly one page.
+  expected_output: >
+    An optimized LaTeX file and corresponding PDF that meets the one-page requirement,
+    with a detailed report of optimizations made and final validation results.
+  agent: optimization_specialist
+  context: [compile_and_validate_pdf]
+
+finalize_and_upload:
+  description: >
+    Complete the resume generation process by:
+    - Saving the final optimized PDF and LaTeX files to Google Drive Generated folder
+    - Updating the Google Sheets with the completion status and file URLs
+    - Creating a summary report of the entire process
+    - Logging any issues or special notes about the generation
+    - Updating the Status column to "completed" with timestamp
+    Ensure all files are properly named and organized for easy retrieval.
+  expected_output: >
+    Confirmation of successful file upload to Google Drive, updated Google Sheets status,
+    and a complete summary report of the resume generation process including file locations
+    and any important notes about the customization.
+  agent: workflow_coordinator
+  context: [optimize_if_needed]
+
+handle_errors:
+  description: >
+    Handle any errors or failures that occur during the resume generation process:
+    - Identify the specific point of failure
+    - Log detailed error information
+    - Update Google Sheets with error status and description
+    - Provide troubleshooting recommendations
+    - Attempt recovery actions if possible
+    - Escalate to manual review if necessary
+    Ensure that failed requests are properly tracked and can be reprocessed.
+  expected_output: >
+    Error report with detailed diagnosis, Google Sheets status update reflecting the error,
+    and recommendations for resolution or manual intervention.
+  agent: workflow_coordinator
